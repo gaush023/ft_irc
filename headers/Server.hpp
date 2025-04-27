@@ -18,7 +18,12 @@ class Server
 
   public:
     Server();
-    std::string _welcomeMessage(void);
     void _getSocket(std::string port);
-
+    void _addToPoll(int newfd);
+    void _removeFromPoll(int fd);
+    std::string _printMessage(std::string num, std::string nickname, std::string msg)
+    std::string _welcomeMsg(void);
+    int _sendAll(int destfd, std::string message)
+    void _newClient(void)
+    void startServer(void)
 }

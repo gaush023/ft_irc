@@ -37,3 +37,58 @@ server::~Server()
   this->_allChannels.clear();
 }
 
+std::string Server::_printMessage(std::string num, std::string nickname, std::string msg)
+{
+  if(nickname.empty())
+    nickname = "unknown";
+  return ":" + this->_name + " " + num + " " + nickname + " " + msg + "\n";
+}
+
+void Server::_newClient(void)
+{
+  struct sockaddr_storage remotaddr;
+  socklen_t addrlen;
+  int newfd;
+  
+  addrlen = sizeof client_addr;
+  newfd = accept(this->_socketfd, (struct sockaddr *)&remotaddr, &addrlen);
+  if (newfd < -1)
+  {
+    std::cerr << "accept: " << strerror(errno) << std::endl;
+    return;
+  }
+  else {
+    int idx = _addToPoll(newfd);    
+    std::string welcomeMsg = _welcomeMsg();
+    if (_sendAll(newfd, welcomeMsg) == -1)
+    {
+      std::cerr << "Client on socket " << newfd << " disconnected or error sending message: " << strerror(errno) << std::endl;
+      _removeFromPoll(idx);
+    }
+    char *ip = inet_ntoa(((struct sockaddr_in *)&remotaddr)->sin_addr);
+    std::cout << "[" << currentDateTime() << "]: new connection from " << ip << " on socket " << newfd << std::endl;
+  }
+}
+
+void Server::startServer(void)
+{
+  while(true)
+  {
+    int pollConut = poll(this->_pfds, this->_online_c, -1);
+    if (pollCount == -1)
+    {
+      std::cerr << "poll error: " << strerror(errno) << std::endl;
+      exit(-1); 
+    }
+    for (int i = 0; i < this->_online_c; i++)
+    {
+      if(this->_pfds[i].revents & POLLIN)
+      {
+        if(this->_pfds[i].fd == this->_socketfd)
+          _newClient();
+        else 
+          _ClientRequest(i);
+      }
+  }
+}
+  
