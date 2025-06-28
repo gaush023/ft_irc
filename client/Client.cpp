@@ -135,7 +135,7 @@ std::string	Client::getAllChannels() const
 	{
 		channels.append("█              █              █                    █                                  █\n");
 		channels.append("█ " RESET + fillIt(it->first, 12));
-		channels.append(YELLOW " █      " RESET + fillIt(std::to_string(it->second->getOnlineUsers()), 7));
+		channels.append(YELLOW " █      " RESET + fillIt(std::toString(it->second->getOnlineUsers()), 7));
 		channels.append(YELLOW " █ " RESET + fillIt(it->second->getCreator()->getFullName(), 18));
 		channels.append(YELLOW " █ " RESET + fillIt(it->second->getTopic(), 32));
 		channels.append(YELLOW " █\n");

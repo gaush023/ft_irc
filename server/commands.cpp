@@ -170,13 +170,13 @@ bool Server::_validMode(Request request)
 
 std::string Server::_printUserModes(std::string ret, int sender_fd)
 {
-  ret.append("Current modes for " + std::to_string(this->_clients[sender_fd]->getMode('i')));
-  ret.append("\ni: " + std::to_string(this->_clients[sender_fd]->getMode('i')));
-  ret.append("\nw: " + std::to_string(this->_clients[sender_fd]->getMode('w')));
-  ret.append("\nr: " + std::to_string(this->_clients[sender_fd]->getMode('r')));
-  ret.append("\no: " + std::to_string(this->_clients[sender_fd]->getMode('o')));
-  ret.append("\nO: " + std::to_string(this->_clients[sender_fd]->getMode('O')));
-  ret.append("\ns: " + std::to_string(this->_clients[sender_fd]->getMode('s')));
+  ret.append("Current modes for " + std::toString(this->_clients[sender_fd]->getMode('i')));
+  ret.append("\ni: " + std::toString(this->_clients[sender_fd]->getMode('i')));
+  ret.append("\nw: " + std::toString(this->_clients[sender_fd]->getMode('w')));
+  ret.append("\nr: " + std::toString(this->_clients[sender_fd]->getMode('r')));
+  ret.append("\no: " + std::toString(this->_clients[sender_fd]->getMode('o')));
+  ret.append("\nO: " + std::toString(this->_clients[sender_fd]->getMode('O')));
+  ret.append("\ns: " + std::toString(this->_clients[sender_fd]->getMode('s')));
   ret.append("\n");
   return ret;
 }
@@ -190,7 +190,7 @@ std::string Server::_SetMode(Request request, int sender_fd)
     std::string ret;
     if (request.args.size() == 1 && request.args[0] == this->_clients[sender_fd]->getNickName())
       ret = _printUserModes(ret, sender_fd);
-    ret.append(std::to_string(461) + "ERR_NEEDMOREPARAMS\n\tPASS :Not enough parameters");
+    ret.append(std::toString(461) + "ERR_NEEDMOREPARAMS\n\tPASS :Not enough parameters");
     return ret;
   }
   if (request.args[0] != this->_clients[sender_fd]->getNickName())

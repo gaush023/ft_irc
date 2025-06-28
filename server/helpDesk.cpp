@@ -31,9 +31,9 @@ std::string Server::_getBotMessage()
 std::string Server::_serverInfo() const
 {
   std::string server("Server Name: " + this->_name + "\n");
-  server.append("Online Users: " + std::to_string(this->_online_c - 1) + "\n");
-  server.append("Max Online Users: " + std::to_string(this->_max_online_c) + "\n");
-  server.append("Number of Channels: " + std::to_string(this->_allChannels.size()) + "\n");
+  server.append("Online Users: " + std::toString(this->_online_c - 1) + "\n");
+  server.append("Max Online Users: " + std::toString(this->_max_online_c) + "\n");
+  server.append("Number of Channels: " + std::toString(this->_allChannels.size()) + "\n");
   return (server);
 }
 
@@ -48,7 +48,7 @@ std::string Server::_channelInfo(std::string channelName, int fd) const
       Info.append("Channel Name: " + it->second->getName() + "\n");
       Info.append("Channel Creator: " + it->second->getCreator()->getFullName() + "\n");
       Info.append("Channel Topic: " + it->second->getTopic() + "\n");
-      Info.append("Online Users: " + std::to_string(it->second->getOnlineUsers()) + "\n");
+      Info.append("Online Users: " + std::toString(it->second->getOnlineUsers()) + "\n");
       return (Info);
     } 
     else {
@@ -69,7 +69,7 @@ std::string Server::_listAllChannels() const
   while (it != this->_allChannels.end())
   {
     channels.append("█              █              █                    █                                  █\n");
-    channels.append("█ " RESET + it->first + YELLOW " █ " RESET + std::to_string(it->second->getOnlineUsers()) + YELLOW " █ " RESET + it->second->getCreator()->getFullName() + YELLOW " █ " RESET + it->second->getTopic() + YELLOW " █\n");
+    channels.append("█ " RESET + it->first + YELLOW " █ " RESET + std::toString(it->second->getOnlineUsers()) + YELLOW " █ " RESET + it->second->getCreator()->getFullName() + YELLOW " █ " RESET + it->second->getTopic() + YELLOW " █\n");
     channels.append("█              █              █                    █                                  █\n");
     it++;
   }
@@ -98,7 +98,7 @@ std::string Server::_helpDesk(Request request, int fd)
     else if (request.args[0] == "1")
       return (this->_clients[fd]->getAllChannels());
     else if (request.args[0] == "2")
-      return ("Online Users: " + std::to_string(this->_online_c - 1) + "\n");
+      return ("Online Users: " + std::toString(this->_online_c - 1) + "\n");
     else if (request.args[0] == "3")
       return (_listAllChannels());
     else if (request.args[0] == "4")

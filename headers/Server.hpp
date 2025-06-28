@@ -26,6 +26,7 @@ class Channel;
 class Request;
 class File;
 
+#include "ToString.hpp"
 #include "Request.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
