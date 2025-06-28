@@ -17,7 +17,7 @@ std::string Server::_parsing(std::string message, int sender_fd)
   else if (request.command == "MODE")
     return (_setMode(request, sender_fd));
   else if (request.command == "PRIVMSG")
-    reurn (_privmsg(request, sender_fd));
+    return (_privmsg(request, sender_fd));
   else if (request.command == "NOTICE")
     return (_notice(request, sender_fd));
   else if (request.command == "HELP")

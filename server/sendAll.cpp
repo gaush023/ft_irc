@@ -23,7 +23,7 @@ int Server::_sendAll(int destfd, std::string message)
     }
     sent += static_cast<size_t>(bytes);
   }  
-  return <static_cast<int>(sent);
+  return static_cast<int>(sent);
 }
 
 std::string Server::_sendToAllUsers(Channel *channel, int senderFd, std::string message)
@@ -45,4 +45,4 @@ std::string Server::_sendToAllUsers(Channel *channel, int senderFd, std::string 
     it++;
   }
   return "";
-};
+}

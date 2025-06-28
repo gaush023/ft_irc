@@ -17,7 +17,7 @@ struct Modes
   bool wallops;
   bool restricted;
   bool op;
-  bool local0p;
+  bool localOp;
   bool server;
 };  
 
@@ -28,9 +28,9 @@ class Client
     bool _Auth;
     bool _Registered;
     bool _isOperator;
-    std::string _Nickname;
-    std::string _Username;
-    std::string _Fullname;
+    std::string _NickName;
+    std::string _UserName;
+    std::string _FullName;
     const std::string _Host;
     std::string _ID;
     struct  sockaddr_storage _remoteAddr;
@@ -44,6 +44,17 @@ class Client
     Client(const Client & x);
     ~Client();
     Client & operator=(const Client & rhs);
+
+    std::string getUserName() const;
+    std::string getNickName() const;
+    std::string getFullName() const;
+    std::string getHost() const;
+    std::string getID() const;
+    bool getAuth() const;
+    int getClientfd() const;
+    int getRegistered() const;
+    int getisOperator() const;
+    int getMode(char mode) const;
     std::string getUserPrefix() const;
     std::string getUserInfo() const;
     std::string getAllChannels() const;

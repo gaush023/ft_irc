@@ -21,7 +21,7 @@ std::string Server::_joinedChannel( Request request, int fd)
   std::vector<std::string>::iterator itKeys = parsKeys.begin();
   while ( itChannels != parsChannels.end() && status == 1)
   {
-    if (itKeys != parskes.end())
+    if (itKeys != parsKeys.end())
       status = _createPrvChannel(*itChannels, *itKeys, fd);
     else
       status = _createChannel(*itChannels, fd);

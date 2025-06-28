@@ -24,10 +24,10 @@ class Channel
     std::string _name;
     std::string _key;
     std::string _topic;
-    std::vector<Client *> _members;
+    std::map<Client *> _members;
     std::vector<Client *> _bannedUsers;
-    std::vector<Client *> _operators;
-    std::vector<Client *> _voices;
+    std::map<Client *> _operators;
+    std::map<Client *> _voices;
 
   public:
     Channel();
@@ -45,10 +45,10 @@ class Channel
     std::string const &getName() const;
     std::string const &getKey() const;
     std::string const &getTopic() const;
-    std::map<int, Client *> &getMembers() const;
-    std::map<int, Client *> &getOperators() const;
-    std::map<int, Client *> &getVoices() const;
-    std::map<std::string, Client *> &getBannedUsers() const;
+    std::map<int, Client *> const &getMembers() const;
+    std::map<int, Client *> const &getOperators() const;
+    std::map<int, Client *> const &getVoices() const;
+    std::map<std::string, Client *> const &getBannedUsers() const;
   
     Client *getCreator() const;
     std::map<int, Client *> getAllUsers() const;
