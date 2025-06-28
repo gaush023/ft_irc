@@ -91,4 +91,5 @@ void Server::startServer(void)
       }
   }
 }
-  
+
+std::string Server::_getPassword(void) const { return this->_password; };
