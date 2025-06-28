@@ -33,6 +33,13 @@ class Channel
     Channel();
 
   public:
+    Channel(std::string channelName, Client *Creator);
+    Channel(std::string channelName, std::string channelKey, Client *Creator);
+    Channel(const Channel &x);
+    Channel &operator=(const Channel &rhs);
+    ~Channel();
+  
+  public:
     char const &getPrefix() const;
     int const &getOnlineUsers() const;
     std::string const &getName() const;

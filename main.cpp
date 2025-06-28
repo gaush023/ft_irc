@@ -15,8 +15,4 @@ int main(int ac, char **av)
   {
     std::cerr << "Error: " << e.what() << std::endl;
   }
-  catch (const std::exception& e)
-  {
-    std::cerr << e.what() << std::endl;
-  }
-}
+};

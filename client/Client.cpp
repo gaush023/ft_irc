@@ -4,7 +4,7 @@ Client::Client(): _clientfd(0), _Auth(false), _Registered(false), _isOperator(fa
 Client::Client(int fd): _clientfd(fd), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _RealName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(),_modes(), _joinedChannels{};
 Client::Client(const Client& x): _Host(x._Host) { *this = x; };
 
-Clinet &Client::operator=( const Client& rhs)
+Client &Client::operator=( const Client& rhs)
 {
   if(this == &rhs)
     return *this;
@@ -16,7 +16,7 @@ Clinet &Client::operator=( const Client& rhs)
   this->_UserName = rhs._UserName;
   this->_FullName = rhs._FullName;
   this->_Auth = rhs._Auth;
-  this->_remotaddr = rhs._remoteAddr;
+  this->_remoteaddr = rhs._remoteAddr;
   this->_addrlen = rhs._addrlen;
   this->_joinedChannels.insert(rhs._joinedChannels.begin(), rhs._joinedChannels.end());
   return *this;
@@ -81,7 +81,7 @@ void Client::setMode(int value, char mode)
     this->_modes.localOp = value;
 else if (mode == 's')
     this->_modes.server = value;
-};
+}
 
 int Client::isjoined(std::string ChannelName) const
 {
@@ -96,10 +96,10 @@ void Client::joinChannel(std::string ChannelName, Channel *channel)
     this->_joinedChannels.insert(std::pair<std::string, Channel *>(ChannelName, channel));
 };
 
-std::string Client::leaveChannel(std::string ChannelName)
+void Client::leaveChannel(std::string ChannelName)
 {
   this->_joinedChannels.erase(ChannelName);
-};
+}
 
 std::string Client::leaveAllChannels()
 { 
@@ -154,7 +154,7 @@ std::string	Client::getAllChannels() const
 	return (channels);
 };
 
-std::string Cliet::getUserPrefix() const
+std::string Client::getUserPrefix() const
 {
   return ":" + this->_NickName + "!" + this->_UserName + "@" + this->_Host + " ";
 }
