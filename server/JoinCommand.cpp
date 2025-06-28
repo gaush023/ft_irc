@@ -25,8 +25,11 @@ std::string Server::_joinChannel( Request request, int fd)
       status = _createPrvChannel(*itChannels, *itKeys, fd);
     else
       status = _createChannel(*itChannels, fd);
+    itChannels++;
   }
- 
+  --itChannels;
+  return ("");
+}; 
 
 int Server::_createChannel( std::string ChannelName, int CreatorFd)
 {
