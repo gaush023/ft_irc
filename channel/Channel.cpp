@@ -4,12 +4,12 @@ Channel::Channel() : _prefix(), _creator(), _onlineUsers(), _name(), _key(), _to
 
 Channel::Channel( const Channel &x){ *this = x; };
 
-Channel::Channel( std::string channellName, std::string key, Client *Creator) : _prefix(), _creator(creator), _onlineUsers(1), _name(channellName), _key(), _topic(), _members(), _bannedUsers(), _operators(), _voices() 
+Channel::Channel( std::string channelName, Client *Creator) : _prefix(), _creator(creator), _onlineUsers(1), _name(channellName), _key(), _topic(), _members(), _bannedUsers(), _operators(), _voices() 
 {
   this->_operators.insert(std::pair<int, Client *>(creator->getClientfd(), creator));
 }
 
-Channel::Channel( std::string channellName, std::string key, Client *creator) : _prefix(), _creator(Creator), _onlineUsers(1), _name(channellName), _key(channelkey), _topic(), _members(), _bannedUsers(), _operators(), _voices() 
+Channel::Channel( std::string channelName, std::string key, Client *creator) : _prefix(), _creator(creator), _onlineUsers(1), _name(channelName), _key(channelkey), _topic(), _members(), _bannedUsers(), _operators(), _voices() 
 {
   this->_operators.insert(std::pair<int, Client *>(creator->getClientfd(), creator));
 };
@@ -97,7 +97,7 @@ void Channel::removeVoice(int i)
 
 void Channel::removeBannedUser(std::string nickname)
 {
-  if (std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), nickname) == this->_bannedUsers.end())
+  if (std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), nickname) != this->_bannedUsers.end())
     return;
   this->_bannedUsers.erase(std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), nickname));
 }
@@ -154,5 +154,5 @@ std::string Channel::listUsers() const
     AllUsers.append("+" + it->second->getNickName() + " ");
     ++it;
   }
-  return usersList;
+  return AllUsers;
 };
