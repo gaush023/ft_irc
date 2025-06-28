@@ -1,6 +1,6 @@
 #include "../headers/Server.hpp"
 
-std::string Server::_joinedChannel( Request request, int fd)
+std::string Server::_joinChannel( Request request, int fd)
 { 
   int status = 1;
   if (!this->_clients[fd]->getRegistered())
