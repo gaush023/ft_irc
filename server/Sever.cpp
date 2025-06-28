@@ -1,6 +1,6 @@
 #include "../heardes/Server.hpp"
 
-Server::Server() : _name(), _password(), _socketfd(0), _clients(), _pfds(nullptr), _online_c(0), _prefix(":"), _allChannels(), _unavailableUserName(), _clinetsNicknames{}
+Server::Server() : _name(), _password(), _socketfd(0), _clients(), _pfds(NULL), _online_c(0), _prefix(":"), _allChannels(), _unavailableUserName(), _clinetsNicknames{}
 {
 }
 

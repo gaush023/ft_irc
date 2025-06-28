@@ -27,7 +27,7 @@ std::string Server::_kickedFromChannel(std::string ChannelName, std::string mess
           user++;
         }
       }
-      else if (user.second == -1 
+      else if (user.second == -1) 
         return _printMessage("442", this->_clients[i]->getNickName(), ChannelName + " :You're not on that channel");
       else
         return _printMessage("482", this->_clients[i]->getNickName(), ChannelName + " :You're not channel operator");

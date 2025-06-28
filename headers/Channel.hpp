@@ -26,10 +26,10 @@ class Channel
     std::string _name;
     std::string _key;
     std::string _topic;
-    std::map<Client *> _members;
+    std::map<int, Client *> _members;
     std::vector<Client *> _bannedUsers;
-    std::map<Client *> _operators;
-    std::map<Client *> _voices;
+    std::map<int, Client *> _operators;
+    std::map<int, Client *> _voices;
 
   public:
     Channel();

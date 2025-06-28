@@ -97,9 +97,9 @@ void Channel::removeVoice(int i)
 
 void Channel::removeBannedUser(std::string nickname)
 {
-  std::vector<std::string>::iterator it = std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), nickname);
-  if (it != this->_bannedUsers.end())
-    this->_bannedUsers.erase(it);
+  if (std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), nickname) == this->_bannedUsers.end())
+    return;
+  this->_bannedUsers.erase(std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), nickname));
 }
 
 void Channel::removeUser(int i)
