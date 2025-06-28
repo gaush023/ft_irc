@@ -12,4 +12,14 @@ const std::string currentDateTime()
   return buf;
 }
 
-
+std::string fillIt(std::string str, size_t len)
+{
+	if (str.length() < len)
+		str.insert(str.end(), len - str.length(), ' ');
+	else
+	{
+		str.erase(str.begin() + len - 1, str.end());
+		str.append(".");
+	}
+	return (str);
+};

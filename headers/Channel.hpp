@@ -11,6 +11,9 @@
 #define CHANNELISFULL 6
 #define NOSUCHCHANNEL 7
 #define USERISBANNED 8
+#define BADCHANMASK 9
+#define USERNOTINCHANNEL -1
+#define USERNOTFOUND -1
 
 class Channel
 {

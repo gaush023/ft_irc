@@ -1,6 +1,6 @@
 #include "../headers/Server.hpp"
 
-void Serever::_getSokcet(std::string Port)
+void Serever::_getSocket(std::string Port)
 {
   int yes = 1;
   int status;

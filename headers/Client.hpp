@@ -2,6 +2,14 @@
 
 #include "Server.hpp"
 
+# define GREEN "\e[1;32m"
+# define RESET "\e[0m"
+# define RED "\e[1;91m"
+# define CYAN "\e[1;36m"
+# define YELLOW "\e[1;33m"
+# define PURPLE "\e[1;35m"
+# define BLUE "\e[1;34m"
+
 struct Modes
 {
   bool away;
@@ -32,11 +40,11 @@ class Client
   
   public:
     Client();
-    Clinet(int fd);
+    Client(int fd);
     Client(const Client & x);
     ~Client();
     Client & operator=(const Client & rhs);
-    std::sting getUserPrefix() const;
+    std::string getUserPrefix() const;
     std::string getUserInfo() const;
     std::string getAllChannels() const;
     std::map<std::string, Channel *> getJoinedChannels() const;
@@ -57,6 +65,7 @@ class Client
     
   public:
     int isjoined(std::string ChannelName) const;
-    int joinedChannelsCount() const;
+    std::string JoinedChannels() const;
+
 };
     
