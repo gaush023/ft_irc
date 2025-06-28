@@ -1,0 +1,1 @@
+g++ -Wall -Wextra -Werror -std=c++98 -c channel/Channel.cpp -o channel/Channel.o

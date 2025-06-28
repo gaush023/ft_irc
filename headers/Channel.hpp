@@ -14,6 +14,8 @@
 #define BADCHANMASK 9
 #define USERNOTINCHANNEL -1
 #define USERNOTFOUND -1
+#define USERALREADYBANNED -1
+#define USERISALREADYJOINED -1
 
 class Channel
 {
@@ -47,7 +49,7 @@ class Channel
     std::string const &getTopic() const;
     std::map<int, Client *> const &getMembers() const;
     std::map<int, Client *> const &getOperators() const;
-    std::map<int, Client *> const &getVoices() const;
+    std::map<int, Client *> const &getVoice() const;
     std::map<std::string, Client *> const &getBannedUsers() const;
   
     Client *getCreator() const;
