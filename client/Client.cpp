@@ -1,7 +1,7 @@
 #include "../headers/Client.hpp"
 
-Client::Client(): _clientfd(0), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _RealName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(),_modes(), _joinedChannels{};
-Client::Client(int fd): _clientfd(fd), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _RealName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(),_modes(), _joinedChannels{};
+Client::Client(): _clientfd(0), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _FullName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(),_modes(), _joinedChannels{};
+Client::Client(int fd): _clientfd(fd), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _FullName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(),_modes(), _joinedChannels{};
 Client::Client(const Client& x): _Host(x._Host) { *this = x; };
 
 Client &Client::operator=( const Client& rhs)
@@ -16,7 +16,7 @@ Client &Client::operator=( const Client& rhs)
   this->_UserName = rhs._UserName;
   this->_FullName = rhs._FullName;
   this->_Auth = rhs._Auth;
-  this->_remoteaddr = rhs._remoteAddr;
+  this->_remoteAddr = rhs._remoteAddr;
   this->_addrlen = rhs._addrlen;
   this->_joinedChannels.insert(rhs._joinedChannels.begin(), rhs._joinedChannels.end());
   return *this;
@@ -76,7 +76,7 @@ void Client::setMode(int value, char mode)
   else if (mode == 'r' && value == 1)
     this->_modes.restricted = value;
   else if (mode == 'o' && value == 0)
-    this->modes.op = value;
+    this->_modes.op = value;
   else if (mode == 'O' && value == 0)
     this->_modes.localOp = value;
 else if (mode == 's')
@@ -104,13 +104,13 @@ void Client::leaveChannel(std::string ChannelName)
 std::string Client::leaveAllChannels()
 { 
 std::map<std::string, Channel *>::iterator it = this->_joinedChannels.begin();
-  while ( it != this->joinedChannels.end())
+  while ( it != this->_joinedChannels.end())
   {
     std::pair<Client *, int> user(it->second->findUserRole(this->_clientfd)); 
   }
     if(user.second == 0)
     {
-      it->second->removeMember(this->_clientfd);
+      it->second->removeUser(this->_clientfd);
     } 
     else if (user.second == 1)
     {

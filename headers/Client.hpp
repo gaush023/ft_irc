@@ -21,6 +21,9 @@ struct Modes
   bool server;
 };  
 
+std::string fillIt(std::string str, size_t len);
+const std::string	currentDateTime();
+
 class Client 
 {
   private:

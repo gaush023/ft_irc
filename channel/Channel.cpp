@@ -4,14 +4,14 @@ Channel::Channel() : _prefix(), _creator(), _onlineUsers(), _name(), _key(), _to
 
 Channel::Channel( const Channel &x){ *this = x; };
 
-Channel::Channel( std::string channelName, Client *Creator) : _prefix(), _creator(creator), _onlineUsers(1), _name(channellName), _key(), _topic(), _members(), _bannedUsers(), _operators(), _voices() 
+Channel::Channel( std::string channelName, Client *Creator) : _prefix(), _creator(Creator), _onlineUsers(1), _name(channelName), _key(), _topic(), _members(), _bannedUsers(), _operators(), _voices() 
 {
-  this->_operators.insert(std::pair<int, Client *>(creator->getClientfd(), creator));
+  this->_operators.insert(std::pair<int, Client *>(Creator->getClientfd(), Creator));
 }
 
-Channel::Channel( std::string channelName, std::string key, Client *creator) : _prefix(), _creator(creator), _onlineUsers(1), _name(channelName), _key(channelkey), _topic(), _members(), _bannedUsers(), _operators(), _voices() 
+Channel::Channel( std::string channelName, std::string key, Client *Creator) : _prefix(), _creator(Creator), _onlineUsers(1), _name(channelName), _key(key), _topic(), _members(), _bannedUsers(), _operators(), _voices() 
 {
-  this->_operators.insert(std::pair<int, Client *>(creator->getClientfd(), creator));
+  this->_operators.insert(std::pair<int, Client *>(Creator->getClientfd(), Creator));
 };
 
 Channel::~Channel() {};
@@ -51,12 +51,12 @@ void Channel::setTopic(std::string topic) { this->_topic = topic; };
 int Channel::addUser(Client *member)
 {
   if (std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), member->getNickName()) != this->_bannedUsers.end())
-    return BANNEDFROMCHAN;
+    return BANNEDFROMECHAN;
   if (this->_members.find(member->getClientfd()) == this->_members.end())
   {
     this->_members.insert(std::pair<int, Client *>(member->getClientfd(), member));
     this->_onlineUsers++;
-    return USERISJOINED;
+    return USERJOINED;
   }
   return USERALREADYJOINED;
 }
@@ -65,12 +65,12 @@ int Channel::addUser(Client *member)
 int Channel::addOperator(Client *member)
 {
   if (std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), member->getNickName()) != this->_bannedUsers.end())
-    return BANNEDFROMCHAN;
+    return BANNEDFROMECHAN;
   if (this->_operators.find(member->getClientfd()) == this->_operators.end())
   {
     this->_operators.insert(std::pair<int, Client *>(member->getClientfd(), member));
     this->_onlineUsers++;
-    return USERISJOINED;
+    return USERJOINED;
   }
   return USERALREADYJOINED;
 }

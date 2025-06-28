@@ -5,7 +5,7 @@
 #define USERALREADYJOINED 0
 #define USERJOINED 1
 #define NOTINCHANNEL 2
-#define BANDFROMECHANNEL 3
+#define BANNEDFROMECHAN 3
 #define TOOMANYCHANNELS 4
 #define BADCHANNELKEY 5
 #define CHANNELISFULL 6
@@ -27,7 +27,7 @@ class Channel
     std::string _key;
     std::string _topic;
     std::map<int, Client *> _members;
-    std::vector<Client *> _bannedUsers;
+    std::vector<std::string> _bannedUsers;
     std::map<int, Client *> _operators;
     std::map<int, Client *> _voices;
 
