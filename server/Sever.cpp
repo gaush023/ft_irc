@@ -8,7 +8,7 @@ Server::Server(std::string Name, int max_online, std::string Port, std::string P
   this->_max_online_c = max_online + 1;
   this->_password = Password;
   this->_online_c = 0;
-  this->_pfds = new pollfd[max_online];
+  this->_pfds = new pollfd[max_online + 1];
   _getSocket(Port); 
   this->_pfds[0].fd = this->_socketfd;
   this->_pfds[0].events = POLLIN;

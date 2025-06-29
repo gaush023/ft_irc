@@ -2,8 +2,9 @@
 
 std::string Server::_parsing(std::string message, int sender_fd)
 {
+  std::cout << "[" << currentDateTime() << "]: Received message from fd " << sender_fd << ": " << message << std::endl;
   Request request(_splitRequest(message)); 
-  
+ 
   if (request.invalidMessage)
     return _printMessage("421", "", ":Unknown command");
   else if (request.command == "PASS")
