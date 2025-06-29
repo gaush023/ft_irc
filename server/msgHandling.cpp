@@ -36,17 +36,17 @@ int Server::_sendall(int destfd, std::string msg)
           int rv = poll(&pfd, 1, 500);
           if (rv > 0 && (pfd.revents & POLLOUT))
           {
-            continue; // socket is ready to send
+            continue; 
           }
           else if (rv == 0)
           {
-            return -1; // timeout occurred
+            return -1; 
           }
           else {
-            return -1; // poll error
+            return -1; 
           }
         }
-        return -1; // error occurred
+        return -1; 
       }
       total += b;
       bytesleft -= b;

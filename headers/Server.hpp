@@ -55,14 +55,15 @@ class Server
     void _addToPoll(int newfd);
     void _removeFromPoll(int i);
     void _newClient(void);
-    int _sendAll(int destfd, std::string message);
+		void _ClientRequest(int i);
+    int _sendall(int destfd, std::string message);
     void _broadcastmsg(int sender_fd, std::string buf, int nbytes);
     std::string _setUserName(Request request, int sender_fd);
     std::string _setNickName(Request request, int sender_fd);
     std::string _setFullName(Request request, int sender_fd);
     std::string _setPassword(Request request, int sender_fd);
     std::string _setOper(Request request, int sender_fd);
-    std::string _seMode(Request request, int sender_fd);
+    std::string _setMode(Request request, int sender_fd);
     std::string _joinChannel(Request request, int sender_fd);
     bool _validMode(Request request);
     std::string _quit(Request request, int sender_fd);
@@ -76,7 +77,7 @@ class Server
     std::string _printHelpInfo();
     std::string _printUserModes(std::string ret, int sender_fd);
     std::vector<std::string> _commaSeparator(std::string arg);
-    int _createPrvChannel(std::string channelName, int sender_fd);
+		int								_createPrvChannel( std::string ChannelName, std::string ChannelKey, int	 CreatorFd );
     int _createChannel(std::string channelName, int sender_fd);
     int _partChannel(std::string channelName, int sender_fd, std::string message, int isPart);
     std::string _helpDesk(Request request, int sender_fd); 
@@ -91,7 +92,7 @@ class Server
     std::string _privmsg(Request request, int sender_fd);
     std::string _notice(Request request, int sender_fd);
     std::string _privToUser(std::string user, std::string message, std::string command, int sender_fd);
-    std::string _privToChannel(std::string channelName, std::string message, std::string command, int sender_fd);
+    std::string _privToChannel(std::string channelName, std::string message, int sender_fd);
     std::string _sendToAllUsers(Channel *channel, int senderFd, std::string message);
     std::string _getPassword() const;
 

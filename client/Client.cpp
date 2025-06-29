@@ -1,7 +1,7 @@
 #include "../headers/Client.hpp"
 
-Client::Client(): _clientfd(0), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _FullName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(),_modes(), _joinedChannels{};
-Client::Client(int fd): _clientfd(fd), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _FullName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(),_modes(), _joinedChannels{};
+Client::Client(): _clientfd(0), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _FullName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(),_modes(), _joinedChannels() {};
+Client::Client(int fd): _clientfd(fd), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _FullName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(),_modes(), _joinedChannels() {};
 Client::Client(const Client& x): _Host(x._Host) { *this = x; };
 
 Client &Client::operator=( const Client& rhs)
@@ -30,6 +30,7 @@ std::string Client::getFullName() const {return this->_FullName; };
 std::string Client::getHost() const { return this->_Host; };
 std::string Client::getID() const { return this->_ID; };
 bool Client::getAuth() const { return this->_Auth; };
+int	Client::getClientfd()		const { return (this->_clientfd); };
 int Client::getRegistered() const { return this->_Registered; };
 int Client::getisOperator() const { return this->_isOperator; };
 
@@ -103,11 +104,10 @@ void Client::leaveChannel(std::string ChannelName)
 
 std::string Client::leaveAllChannels()
 { 
-std::map<std::string, Channel *>::iterator it = this->_joinedChannels.begin();
+  std::map<std::string, Channel *>::iterator it = this->_joinedChannels.begin();
   while ( it != this->_joinedChannels.end())
   {
-    std::pair<Client *, int> user(it->second->findUserRole(this->_clientfd)); 
-  }
+    std::pair<Client *, int> user(it->second->findUserRole(this->_clientfd));
     if(user.second == 0)
     {
       it->second->removeUser(this->_clientfd);
@@ -120,8 +120,23 @@ std::map<std::string, Channel *>::iterator it = this->_joinedChannels.begin();
     {
       it->second->removeVoice(this->_clientfd);
     }
-    return ("");
+    user.first->leaveChannel(it->second->getName());
+    it = this->_joinedChannels.erase(it);
+  }
+  return ("");
 }
+
+std::string	Client::getUserInfo() const
+{
+	std::string	userInfo;
+	userInfo.append("User Name: " + this->_UserName + "\n");
+	userInfo.append("Full Name: " + this->_FullName + "\n");
+	userInfo.append("Nick Name: " + this->_NickName + "\n");
+	userInfo.append("Host: " + this->_Host + "\n");
+	userInfo.append("Joined Channels: " + std::to_string(this->_joinedChannels.size()) + "\n");
+	userInfo.append("\n");
+	return (userInfo);
+};
 
 std::string	Client::getAllChannels() const
 {
@@ -135,7 +150,7 @@ std::string	Client::getAllChannels() const
 	{
 		channels.append("█              █              █                    █                                  █\n");
 		channels.append("█ " RESET + fillIt(it->first, 12));
-		channels.append(YELLOW " █      " RESET + fillIt(std::toString(it->second->getOnlineUsers()), 7));
+		channels.append(YELLOW " █      " RESET + fillIt(toString(it->second->getOnlineUsers()), 7));
 		channels.append(YELLOW " █ " RESET + fillIt(it->second->getCreator()->getFullName(), 18));
 		channels.append(YELLOW " █ " RESET + fillIt(it->second->getTopic(), 32));
 		channels.append(YELLOW " █\n");
@@ -154,7 +169,7 @@ std::string	Client::getAllChannels() const
 	return (channels);
 };
 
-std::string Client::getUserPrefix() const
+std::string Client::getUserPerfix() const
 {
   return ":" + this->_NickName + "!" + this->_UserName + "@" + this->_Host + " ";
 }

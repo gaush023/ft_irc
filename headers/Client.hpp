@@ -58,7 +58,7 @@ class Client
     int getRegistered() const;
     int getisOperator() const;
     int getMode(char mode) const;
-    std::string getUserPrefix() const;
+    std::string getUserPerfix() const;
     std::string getUserInfo() const;
     std::string getAllChannels() const;
     std::map<std::string, Channel *> getJoinedChannels() const;

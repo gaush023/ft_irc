@@ -1,4 +1,4 @@
-#inckude "../headers/Server.hpp"
+#include "../headers/Server.hpp"
 
 void Server::_ClientRequest(int i)
 {
@@ -22,7 +22,7 @@ void Server::_ClientRequest(int i)
       message.erase(message.end() - 1);
     std::string ret = _parsing(message, this->_pfds[i].fd);
   }
-
+};
 
 Request Server::_splitRequest(std::string req)
 {
@@ -44,8 +44,10 @@ Request Server::_splitRequest(std::string req)
       }
       if (j <= req.size() && i >= j)
         request.args.push_back(req.substr(j, i - j));
-      else 
-        return reqest.invalidMessage = true;
+      else {
+        request.invalidMessage = true;
+        return (request);
+      }
       while (req[i] == ' ')
         i++;
       j = i;
@@ -56,8 +58,9 @@ Request Server::_splitRequest(std::string req)
         request.invalidMessage = true;
         return (request);
       }
-      request.command = req.substr(0, j);
-      request.args.push_back(req.substr(i + 1));
+      request.args.push_back(req.substr(i + 1, req.length() - i));
+      request.command = request.args[0];
+      request.args.erase(request.args.begin());
       return (request);
     }
     i++;
@@ -65,8 +68,8 @@ Request Server::_splitRequest(std::string req)
 
   if(i && req[i])
     request.args.push_back(req.substr(j, i - j));
-  request.command = req.args[0];
+  request.command = request.args[0];
   request.args.erase(request.args.begin());
   return (request);
-}
+};
 

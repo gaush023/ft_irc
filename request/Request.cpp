@@ -1,8 +1,8 @@
 #include "../headers/Request.hpp"
 
 Request::Request() : args(), command(), invalidMessage(false) {}
-
 Request::Request( const Request &other) { *this = other; }
+Request::~Request() {}
 
 Request &Request::operator=(const Request &other) {
     if (this == &other)

@@ -1,4 +1,9 @@
-NAME = ft_irc
+NAME = ftirc
+:q:q
+:q
+:wq
+
+
 
 CXX = g++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
@@ -21,7 +26,6 @@ server/msgHandling.cpp \
 server/pollHandling.cpp \
 server/requestHeadling.cpp \
 server/sendAll.cpp \
-server/sendMsg.cpp \
 server/utils.cpp
 
 OBJS = $(SRCS:.cpp=.o)

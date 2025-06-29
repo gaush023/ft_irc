@@ -4,16 +4,16 @@ void Server::_getSocket(std::string Port)
 {
   int yes = 1;
   int status;
-  struct addrinfo hints;
+  struct addrinfo hint;
   struct addrinfo *servinfo;
-  struct addrinfo *p;
+  struct addrinfo *tmp;
 
-  memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_INET;
-  hints.ai_socktype = SOCK_STREAM;
-  hints.protocol = getprotobyname("TCP")->p_proto;
+  memset(&hint, 0, sizeof hint);
+  hint.ai_family = AF_INET;
+  hint.ai_socktype = SOCK_STREAM;
+  hint.ai_protocol = getprotobyname("TCP")->p_proto;
   
-  status = getaddrinfo("0.0.0.0", Port.c_str(), &hints, &servinfo);
+  status = getaddrinfo("0.0.0.0", Port.c_str(), &hint, &servinfo);
   
   if (status != 0)
   {

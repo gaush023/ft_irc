@@ -11,7 +11,7 @@ int Server::_partChannel(std::string ChannelName, int i, std::string message, in
       return (NOTINCHANNEL);
     else {
       if (user.second == 0)
-        itCh->second->removeMember(i);
+        itCh->second->removeUser(i);
       else if (user.second == 1)
         itCh->second->removeOperator(i);
       else

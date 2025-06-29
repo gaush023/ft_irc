@@ -13,10 +13,6 @@ std::string Server::_joinChannel( Request request, int fd)
   std::vector<std::string> parsKeys;
   if (request.args.size() == 2)
     parsKeys = _commaSeparator(request.args[1]);
-  std::vector<std::string> parsChannels(_commaSeparator(request.args[0]));
-  std::vector<std::string> parsKeys;
-  if (request.args.size() == 2)
-    parsKeys = _commaSeparator(request.args[1]);
   std::vector<std::string>::iterator itChannels = parsChannels.begin();
   std::vector<std::string>::iterator itKeys = parsKeys.begin();
   while ( itChannels != parsChannels.end() && status == 1)
@@ -34,22 +30,23 @@ std::string Server::_joinChannel( Request request, int fd)
 int Server::_createChannel( std::string ChannelName, int CreatorFd)
 {
   std::map<std::string, Channel *>::iterator it = this->_allChannels.find(ChannelName);
-  if ( it == this->_allChannel.end())
+  if ( it == this->_allChannels.end())
   {
     if (ChannelName[0] != '&' && ChannelName[0] != '#' && ChannelName[0] != '+' && ChannelName[0] != '!')
       return (BADCHANMASK);
+    Channel *channel = new Channel(ChannelName, this->_clients[CreatorFd]);
     this->_allChannels.insert(std::pair<std::string, Channel *>(ChannelName, channel));
     this->_clients[CreatorFd]->joinChannel(ChannelName, channel);
   }
   else {
       if (it->second->getKey().empty())
       {
-        status = 0;
+        int status = 0;
         if (this->_clients[CreatorFd]->getisOperator() == true)
           status = it->second->addOperator(this->_clients[CreatorFd]);
         else
-          status = it->second->addMember(this->_clients[CreatorFd]);
-        if (status == USERISJOINED)
+          status = it->second->addUser(this->_clients[CreatorFd]);
+        if (status == USERJOINED)
           this->_clients[CreatorFd]->joinChannel(it->first, it->second);
         else if (status == USERALREADYJOINED)
           return (USERALREADYJOINED);
@@ -57,14 +54,14 @@ int Server::_createChannel( std::string ChannelName, int CreatorFd)
           return (BANNEDFROMCHAN);
         _sendall(CreatorFd, this->_clients[CreatorFd]->getUserPerfix() + "JOIN " + ChannelName + "\n");
         _sendall(CreatorFd, _printMessage("332", this->_clients[CreatorFd]->getNickName(), ChannelName + " :" + it->second->getTopic()));
-        _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " = " + ChannelName, it->second->listAllUsers()));
+        _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " = " + ChannelName, it->second->listUsers()));
         _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " " + ChannelName, ":End of NAMES list"));
         std::string reply = "JOIN " + ChannelName + "\n";
         _sendToAllUsers(it->second, CreatorFd, reply);
-        return (USERISJOINED);
+        return (USERJOINED);
       }
     }
-    return (USERISJOINED);
+    return (USERJOINED);
 }
 
 int Server::_createPrvChannel(std::string ChannelName, std::string ChannelKey, int CreatorFd)
@@ -81,12 +78,12 @@ int Server::_createPrvChannel(std::string ChannelName, std::string ChannelKey, i
   else {
       if (it->second->getKey() == ChannelKey)
       {
-        status = 0;
+        int status = 0;
         if (this->_clients[CreatorFd]->getisOperator() == true)
           status = it->second->addOperator(this->_clients[CreatorFd]);
         else
-          status = it->second->addMember(this->_clients[CreatorFd]);
-        if (status == USERISJOINED)
+          status = it->second->addUser(this->_clients[CreatorFd]);
+        if (status == USERJOINED)
           this->_clients[CreatorFd]->joinChannel(it->first, it->second);
         else if (status == USERALREADYJOINED)
           return (USERALREADYJOINED);
@@ -94,16 +91,16 @@ int Server::_createPrvChannel(std::string ChannelName, std::string ChannelKey, i
           return (BANNEDFROMCHAN);
         _sendall(CreatorFd, this->_clients[CreatorFd]->getUserPerfix() + "JOIN " + ChannelName + "\n");
         _sendall(CreatorFd, _printMessage("332", this->_clients[CreatorFd]->getNickName(), ChannelName + " :" + it->second->getTopic()));
-        _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " = " + ChannelName, it->second->listAllUsers()));
+        _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " = " + ChannelName, it->second->listUsers()));
         _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " " + ChannelName, ":End of NAMES list"));
         _sendToAllUsers(it->second, CreatorFd, "JOIN " + ChannelName + "\n");
-        return (USERISJOINED);
+        return (USERJOINED);
       }
       else {
-        return (BADCHANKEY);
+        return (BADCHANNELKEY);
       }
     }
-    return (USERISJOINED);
+    return (USERJOINED);
   };
 
 std::vector<std::string> Server::_commaSeparator(std::string arg)

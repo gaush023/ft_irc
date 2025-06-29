@@ -38,7 +38,7 @@ std::string Server::_privToChannel(std::string ChannelName, std::string masseage
     if (user.second == -1)
       return (_printMessage("404", this->_clients[fd]->getNickName(), ChannelName.append(" :You're not on that channel")));
     std::string msg("PRIVMSG " + ChannelName + " :" + masseage + "\n");
-    _sendAll(it->second-, msg);
+    _sendToAllUsers(it->second, fd, msg);
   }
   else
     return (_printMessage("401", this->_clients[fd]->getNickName(), ChannelName.append(" :No such nick/channel")));    

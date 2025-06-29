@@ -1,8 +1,6 @@
-#include "../heardes/Server.hpp"
+#include "../headers/Server.hpp"
 
-Server::Server() : _name(), _password(), _socketfd(0), _clients(), _pfds(NULL), _online_c(0), _prefix(":"), _allChannels(), _unavailableUserName(), _clinetsNicknames{}
-{
-}
+Server::Server() : _name(), _password(), _socketfd(0), _clients(), _pfds(NULL), _online_c(0), _prefix(":"), _allChannels(), _unavailableUserName(), _clientNicknames() {}
 
 Server::Server(std::string Name, int max_online, std::string Port, std::string Password): _clients()
 {
@@ -10,14 +8,14 @@ Server::Server(std::string Name, int max_online, std::string Port, std::string P
   this->_max_online_c = max_online + 1;
   this->_password = Password;
   this->_online_c = 0;
-  this->_pdfs = new pollfd[max_online];
+  this->_pfds = new pollfd[max_online];
   _getSocket(Port); 
-  this->_pdfs[0].fd = this->socketfd;
-  this->_pdfs[0].events = POLLIN;
+  this->_pfds[0].fd = this->_socketfd;
+  this->_pfds[0].events = POLLIN;
   this->_online_c++;
 }
 
-server::~Server()
+Server::~Server()
 {
   if(this->_pfds)
     delete [] this->_pfds;
@@ -50,7 +48,7 @@ void Server::_newClient(void)
   socklen_t addrlen;
   int newfd;
   
-  addrlen = sizeof client_addr;
+  addrlen = sizeof remotaddr;
   newfd = accept(this->_socketfd, (struct sockaddr *)&remotaddr, &addrlen);
   if (newfd < -1)
   {
@@ -58,12 +56,12 @@ void Server::_newClient(void)
     return;
   }
   else {
-    int idx = _addToPoll(newfd);    
+    _addToPoll(newfd);    
     std::string welcomeMsg = _welcomeMsg();
-    if (_sendAll(newfd, welcomeMsg) == -1)
+    if (send(newfd, welcomeMsg.c_str(), welcomeMsg.length(), 0) == -1)
     {
       std::cerr << "Client on socket " << newfd << " disconnected or error sending message: " << strerror(errno) << std::endl;
-      _removeFromPoll(idx);
+      _removeFromPoll(newfd);
     }
     char *ip = inet_ntoa(((struct sockaddr_in *)&remotaddr)->sin_addr);
     std::cout << "[" << currentDateTime() << "]: new connection from " << ip << " on socket " << newfd << std::endl;
@@ -74,7 +72,7 @@ void Server::startServer(void)
 {
   while(true)
   {
-    int pollConut = poll(this->_pfds, this->_online_c, -1);
+    int pollCount = poll(this->_pfds, this->_online_c, -1);
     if (pollCount == -1)
     {
       std::cerr << "poll error: " << strerror(errno) << std::endl;
@@ -89,7 +87,11 @@ void Server::startServer(void)
         else 
           _ClientRequest(i);
       }
+    }
   }
 }
 
-std::string Server::_getPassword(void) const { return this->_password; };
+std::string Server::_getPassword() const
+{
+  return this->_password;
+};

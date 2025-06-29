@@ -13,7 +13,7 @@ std::string Server::_parsing(std::string message, int sender_fd)
   else if (request.command == "USER")
     return (_setUserName(request, sender_fd));
   else if (request.command == "OPER")
-    return (_setOperator(request, sender_fd));
+    return (_setOper(request, sender_fd));
   else if (request.command == "MODE")
     return (_setMode(request, sender_fd));
   else if (request.command == "PRIVMSG")
@@ -33,7 +33,7 @@ std::string Server::_parsing(std::string message, int sender_fd)
   else if (request.command == "QUIT")
     return (_quit(request, sender_fd));
   else if (request.command == "SENDFILE")
-    return (_sendFile(requst, sender_fd));
+    return (_sendFile(request, sender_fd));
   else if (request.command == "GETFILE")
     return (_getFile(request, sender_fd));
   else if (request.command == "HELPDESK")
@@ -49,7 +49,7 @@ std::string Server::_notice(Request request, int sender_fd)
   if(request.args.size() < 2)
     return _printMessage("461", this->_clients[sender_fd]->getNickName(), ":Not enough parameters");
   if(request.args.size() == 2)
-    _privToUser(request.args[0], request,args[1], "NOTICE", sender_fd);
+    _privToUser(request.args[0], request.args[1], "NOTICE", sender_fd);
   return ("");
 }
  
@@ -80,7 +80,8 @@ std::string Server::_topic(Request request, int fd)
     else
       return _printMessage("332", this->_clients[fd]->getNickName(), request.args[0] + " :" + this->_allChannels.find(request.args[0])->second->getTopic());
   }
-  if (this->_allChannels.find(request.args[0]) != this->_allChannels.end())
+  std::map<std::string, Channel *>::iterator it = this->_allChannels.find(request.args[0]);
+  if (it != this->_allChannels.end())
   {
     std::pair<Client *, int> user = it->second->findUserRole(fd);
     if (user.second == 1)
@@ -125,12 +126,12 @@ std::string Server::_setNickName(Request request, int sender_fd)
       return _printMessage("432", this->_clients[sender_fd]->getNickName(), ":Erroneous nickname");
     pos++;
   }
-  if (std::find(this->_clientsNames.begin(), this->_clientsNames.end(), request.args[0]) != this->_clientsNames.end())
+  if (std::find(this->_clientNicknames.begin(), this->_clientNicknames.end(), request.args[0]) != this->_clientNicknames.end())
     return _printMessage("433", this->_clients[sender_fd]->getNickName(), request.args[0] + " :Nickname is already in use");
   
   this->_clients[sender_fd]->setNickName(request.args[0]);
-  this->_clientsNames.push_back(this->_clients[sender_fd]->getNickName());
-  if(!this->clients[sender_fd]->getUserName() != "")
+  this->_clientNicknames.push_back(this->_clients[sender_fd]->getNickName());
+  if(this->_clients[sender_fd]->getUserName() != "")
   {
     this->_clients[sender_fd]->setID(this->_clients[sender_fd]->getUserName() + "!" + this->_clients[sender_fd]->getNickName() + "@" + this->_clients[sender_fd]->getHost());
     this->_clients[sender_fd]->setRegistered(true);
@@ -161,7 +162,7 @@ std::string Server::_setUserName(Request request, int sender_fd)
 bool Server::_validMode(Request request)
 {
   char c = request.args[1][1];
-  if (request.args[1].length != 2 || request.args[1][0] != '+' && request.args[1][0] != '-')
+  if (request.args[1].length() != 2 || (request.args[1][0] != '+' && request.args[1][0] != '-'))
     return false;
   if (c != 'i' && c != 'w' && c != 'r' && c != 'o' && c != 'O' && c != 's')
     return false;
@@ -170,18 +171,18 @@ bool Server::_validMode(Request request)
 
 std::string Server::_printUserModes(std::string ret, int sender_fd)
 {
-  ret.append("Current modes for " + std::toString(this->_clients[sender_fd]->getMode('i')));
-  ret.append("\ni: " + std::toString(this->_clients[sender_fd]->getMode('i')));
-  ret.append("\nw: " + std::toString(this->_clients[sender_fd]->getMode('w')));
-  ret.append("\nr: " + std::toString(this->_clients[sender_fd]->getMode('r')));
-  ret.append("\no: " + std::toString(this->_clients[sender_fd]->getMode('o')));
-  ret.append("\nO: " + std::toString(this->_clients[sender_fd]->getMode('O')));
-  ret.append("\ns: " + std::toString(this->_clients[sender_fd]->getMode('s')));
+  ret.append("Current modes for " + toString(this->_clients[sender_fd]->getMode('i')));
+  ret.append("\ni: " + toString(this->_clients[sender_fd]->getMode('i')));
+  ret.append("\nw: " + toString(this->_clients[sender_fd]->getMode('w')));
+  ret.append("\nr: " + toString(this->_clients[sender_fd]->getMode('r')));
+  ret.append("\no: " + toString(this->_clients[sender_fd]->getMode('o')));
+  ret.append("\nO: " + toString(this->_clients[sender_fd]->getMode('O')));
+  ret.append("\ns: " + toString(this->_clients[sender_fd]->getMode('s')));
   ret.append("\n");
   return ret;
 }
 
-std::string Server::_SetMode(Request request, int sender_fd)
+std::string Server::_setMode(Request request, int sender_fd)
 {
   if (!this->_clients[sender_fd]->getRegistered())
     return _printMessage("451", this->_clients[sender_fd]->getNickName(), ":You have not registered");
@@ -190,22 +191,22 @@ std::string Server::_SetMode(Request request, int sender_fd)
     std::string ret;
     if (request.args.size() == 1 && request.args[0] == this->_clients[sender_fd]->getNickName())
       ret = _printUserModes(ret, sender_fd);
-    ret.append(std::toString(461) + "ERR_NEEDMOREPARAMS\n\tPASS :Not enough parameters");
+    ret.append(toString(461) + "ERR_NEEDMOREPARAMS\n\tPASS :Not enough parameters");
     return ret;
   }
   if (request.args[0] != this->_clients[sender_fd]->getNickName())
     return _printMessage("502", this->_clients[sender_fd]->getNickName(), ":Cannot change modes for other users");
-  if (!_validMode(request)
+  if (!_validMode(request))
     return _printMessage("501", this->_clients[sender_fd]->getNickName(), ":Unknown mode flag");
   if (request.args[1][0] == '+')
     this->_clients[sender_fd]->setMode(true, request.args[1][1]);
   else {
-    this->_clients[sender_fd]->setMode(false, request.args[1][1]);
+    this->_clients[sender_fd]->setMode(false, request.args[2][1]);
   }
   return _printMessage("221", this->_clients[sender_fd]->getNickName(), request.args[1] + " :Mode set successfully");
 }
 
-std::string Server::_setOperator(Request request, int sender_fd)
+std::string Server::_setOper(Request request, int sender_fd)
 {
   if(!this->_clients[sender_fd]->getAuth())
     return _printMessage("451", this->_clients[sender_fd]->getNickName(), ":You have not registered");
@@ -241,9 +242,9 @@ std::string Server::_quit(Request request, int sender_fd)
 
 std::string Server::_printHelpInfo()
 {
-  std::strin helpInfo;
+  std::string helpInfo;
   
-  helpInfo.append(GREEN)
+  helpInfo.append(GREEN);
   helpInfo.append("STEP 1: PASS\n");
   helpInfo.append(RESET);
   helpInfo.append("\tUse PASS command to set a password. e.g: PASS [Server Password]\n\n");

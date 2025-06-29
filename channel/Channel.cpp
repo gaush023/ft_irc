@@ -51,7 +51,7 @@ void Channel::setTopic(std::string topic) { this->_topic = topic; };
 int Channel::addUser(Client *member)
 {
   if (std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), member->getNickName()) != this->_bannedUsers.end())
-    return BANNEDFROMECHAN;
+    return BANNEDFROMCHAN;
   if (this->_members.find(member->getClientfd()) == this->_members.end())
   {
     this->_members.insert(std::pair<int, Client *>(member->getClientfd(), member));
@@ -65,7 +65,7 @@ int Channel::addUser(Client *member)
 int Channel::addOperator(Client *member)
 {
   if (std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), member->getNickName()) != this->_bannedUsers.end())
-    return BANNEDFROMECHAN;
+    return BANNEDFROMCHAN;
   if (this->_operators.find(member->getClientfd()) == this->_operators.end())
   {
     this->_operators.insert(std::pair<int, Client *>(member->getClientfd(), member));
