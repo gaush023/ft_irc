@@ -2,9 +2,9 @@
 
 std::string Server::_parsing(std::string message, int sender_fd)
 {
-  std::cout << "[" << currentDateTime() << "]: Received message from fd " << sender_fd << ": " << message << std::endl;
   Request request(_splitRequest(message)); 
- 
+
+  std::cout << request.command << std::endl;
   if (request.invalidMessage)
     return _printMessage("421", "", ":Unknown command");
   else if (request.command == "PASS")
@@ -101,6 +101,7 @@ std::string Server::_topic(Request request, int fd)
 
 std::string Server::_setPassword(Request request, int sender_fd)
 {
+  std::cout << "#"+this->_password+"#" << std::endl;
   if (request.args.size() < 1)
     return _printMessage("461", this->_clients[sender_fd]->getNickName(), ":Not enough parameters");
   if(this->_clients[sender_fd]->getRegistered())

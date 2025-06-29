@@ -6,6 +6,7 @@ Server::Server(std::string Name, int max_online, std::string Port, std::string P
 {
   this->_name = Name;
   this->_max_online_c = max_online + 1;
+  std::cout << "Password: " << Password+"#" << std::endl;
   this->_password = Password;
   this->_online_c = 0;
   this->_pfds = new pollfd[max_online + 1];
@@ -70,7 +71,7 @@ void Server::_newClient(void)
 
 void Server::startServer(void)
 {
-  while(true)
+  while(77)
   {
     int pollCount = poll(this->_pfds, this->_online_c, -1);
     if (pollCount == -1)

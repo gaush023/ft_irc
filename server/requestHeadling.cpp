@@ -24,6 +24,7 @@ void Server::_ClientRequest(int i)
     if (send(sender_fd, ret.c_str(), ret.length(), 0) == -1)
       std::cout << "send() error: " << strerror(errno) << std::endl;
   }
+  memset(&buf, 0, 6000);
 };
 
 Request Server::_splitRequest(std::string req)
@@ -33,11 +34,11 @@ Request Server::_splitRequest(std::string req)
   size_t j = 0;
   size_t len = req.length();
 
-  std::cout << "[" << currentDateTime() << "]: Splitting request: " << req << std::endl;
   if (req[i] == ' ' || !req[i]) {
     request.invalidMessage = true;
     return (request);
   }
+  j = i;
   while(i < len && req[i])
   {
     if(req[i] == ' ')
@@ -46,7 +47,6 @@ Request Server::_splitRequest(std::string req)
         request.invalidMessage = true;
         return (request);
       }
-      std::cout << "[" << currentDateTime() << "]: Found space at position " << i << std::endl;
       request.args.push_back(req.substr(j, i - j)); 
       while (req[i] == ' ')
         i++;
@@ -56,23 +56,19 @@ Request Server::_splitRequest(std::string req)
     {
       if (i == 0 || req[i - 1] != ' ') {
         request.invalidMessage = true;
-        std::cout << "[" << currentDateTime() << "]: Invalid message format: " << req << std::endl;
         return (request);
       }
       request.args.push_back(req.substr(i + 1, req.length() - i));
       request.command = request.args[0];
       request.args.erase(request.args.begin());
-      std::cout << "[" << currentDateTime() << "]: Received command: " << request.command << std::endl;
       return (request);
     }
     i++;
   }
-
-  if(i && req[i])
+  if(i > j)
     request.args.push_back(req.substr(j, i - j));
   request.command = request.args[0];
   request.args.erase(request.args.begin());
-  std::cout << "[" << currentDateTime() << "]: Received command: " << request.command << std::endl;
   return (request);
 };
 
