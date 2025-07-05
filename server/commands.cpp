@@ -224,22 +224,28 @@ std::string Server::_setOper(Request request, int sender_fd)
 
 std::string Server::_quit(Request request, int sender_fd)
 {
-  std::string ret = this->_clients[sender_fd]->getUserPerfix() + "QUIT ";
-  if (request.args.size())
-    ret.append(":" + request.args[0] + "\n");
-  else
-    ret.append("\n");
-  std::map<std::string, Channel *> channels = this->_clients[sender_fd]->getJoinedChannels();
-  std::map<std::string, Channel *>::iterator it = channels.begin();
-  while (it != channels.end())
-  {
-    _sendToAllUsers(it->second, sender_fd, ret);
-    it++;
-  }
-  this->_clients[sender_fd]->leaveAllChannels();
-  close(this->_clients[sender_fd]->getClientfd());
-  _removeFromPoll(sender_fd);
-  return ("QUIT");
+    std::string ret = this->_clients[sender_fd]->getUserPerfix() + "QUIT ";
+    if (request.args.size())
+        ret.append(":" + request.args[0] + "\n");
+    else
+        ret.append("\n");
+    std::cout << ret << std::endl;
+    std::map<std::string, Channel *> channels = this->_clients[sender_fd]->getJoinedChannels();
+    std::cout << "Channels size: " << channels.size() << std::endl;
+    std::map<std::string, Channel *>::iterator it = channels.begin();
+    std::cout << "Channels iterator: " << it->first << std::endl;
+    while (it != channels.end())
+    {
+        _sendToAllUsers(it->second, sender_fd, ret);
+        it++;
+    }
+    std::cout << "Leaving all channels for client: " << this->_clients[sender_fd]->getNickName() << std::endl;
+    this->_clients[sender_fd]->leaveAllChannels();
+    std::cout << "Removing client: " << this->_clients[sender_fd]->getNickName() << std::endl;
+    close(this->_clients[sender_fd]->getClientfd());
+    std::cout << "Client removed: " << this->_clients[sender_fd]->getNickName() << std::endl;
+    _removeFromPoll(sender_fd);
+    return ("QUIT");
 };
 
 std::string Server::_printHelpInfo()
