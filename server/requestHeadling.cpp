@@ -17,13 +17,24 @@ void Server::_ClientRequest(int i)
     _removeFromPoll(i);
   }
   else {
-    std::string message(buf, strlen(buf) - 1);
-    if (message.back() == '\r')
-      message.erase(message.end() - 1);
-    std::string ret = _parsing(message, this->_pfds[i].fd);
-    if (send(sender_fd, ret.c_str(), ret.length(), 0) == -1)
-      std::cout << "send() error: " << strerror(errno) << std::endl;
-  }
+        std::cout << "[" << currentDateTime() << "]: received " << nbytes << " bytes from socket " << sender_fd << std::endl;
+        std::cout << "Message: " << std::string(buf, nbytes) << std::endl;
+        std::cout << "sender_fd: " << sender_fd << std::endl;
+        _recvBuf[sender_fd] += std::string(buf, nbytes);
+        std::cout << "Buffer for socket " << sender_fd << ": " << _recvBuf[sender_fd] << std::endl;
+        size_t pos;
+        while((pos = _recvBuf[sender_fd].find("\r\n")) != std::string::npos)
+        {
+              std::string message = _recvBuf[sender_fd].substr(0, pos);
+              _recvBuf[sender_fd].erase(0, pos + 2);
+
+              std::string ret = _parsing(message, this->_pfds[i].fd);
+              if (send(sender_fd, ret.c_str(), ret.length(), 0) == -1)
+              {
+                std::cerr << "send() error: " << strerror(errno) << std::endl;
+              }
+        }
+    }
   memset(&buf, 0, 6000);
 };
 

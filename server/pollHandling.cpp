@@ -19,9 +19,11 @@ void Server::_addToPoll(int newfd)
 
 void Server::_removeFromPoll(int i)
 {
-  close(this->_pfds[i].fd);
-  this->_pfds[i] = this->_pfds[this->_online_c - 1];
-  this->_clients.erase(this->_pfds[i].fd);
-  this->_online_c--;
+    int removed_fd = this->_pfds[i].fd;
+    if ( i != this->_online_c - 1)
+        this->_pfds[i] = this->_pfds[this->_online_c - 1];
+    this->_online_c--;
+    this->_clients.erase(removed_fd);
+    this->_recvBuf.erase(removed_fd);
 }
 

@@ -47,6 +47,7 @@ class Server
     std::vector<std::string> _unavailableUserName;
     std::vector<std::string> _clientNicknames;  
     std::map<std::string, File> _files;
+    std::map<int, std::string> _recvBuf;
     
   private:
     Server();

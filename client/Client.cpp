@@ -93,15 +93,16 @@ int Client::isjoined(std::string ChannelName) const
 
 void Client::joinChannel(std::string ChannelName, Channel *channel)
 {
-  if (!isjoined(ChannelName))
-    this->_joinedChannels.insert(std::pair<std::string, Channel *>(ChannelName, channel));
+    std::cout << "he is joining channel: " << ChannelName << std::endl;
+    if (!isjoined(ChannelName))
+        this->_joinedChannels.insert(std::pair<std::string, Channel *>(ChannelName, channel));
 };
 
 void Client::leaveChannel(std::string ChannelName)
 {
-    printf("noo");
-    std::cout << "Client: " << this->_NickName << " leaving channel: " << ChannelName << std::endl;
-    printf("noo");
+    std::cout << "he is leaving channel: " << ChannelName << std::endl;
+    this->_joinedChannels.erase(ChannelName);
+    std::cout << "Wow, he left channel: " << ChannelName << std::endl;
 }
 
 std::string Client::leaveAllChannels()
@@ -125,7 +126,6 @@ std::string Client::leaveAllChannels()
         }
         std::cout << "Client: " << this->_NickName << " leaving channel: " << it->second->getName() << std::endl;
         user.first->leaveChannel(it->second->getName());
-        std::cout << "Client: " << this->_NickName << " removed from channel: " << it->second->getName() << std::endl;
         it = this->_joinedChannels.begin();
         printf("tt2222t");
     }
