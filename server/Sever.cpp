@@ -10,10 +10,17 @@ Server::Server(std::string Name, int max_online, std::string Port, std::string P
     this->_max_online_c = max_online + 1;
     this->_password = Password;
     this->_online_c = 0;
-    this->_pfds = new pollfd[max_online + 1];
+    this->_pfds = new pollfd[max_online];
+    for (int i = 0; i < max_online; i++)
+    {
+        this->_pfds[i].fd = -1;
+        this->_pfds[i].events = 0;
+        this->_pfds[i].revents = 0;
+    }
     _getSocket(Port); 
     this->_pfds[0].fd = this->_socketfd;
     this->_pfds[0].events = POLLIN;
+    this->_pfds[0].revents = 0;
     this->_online_c++;
 }
 
@@ -72,7 +79,7 @@ void Server::_newClient(void)
 
 void Server::startServer(void)
 {
-  while(77)
+  while(true)
   {
     int pollCount = poll(this->_pfds, this->_online_c, -1);
     if (pollCount == -1)

@@ -205,7 +205,7 @@ std::string Server::_setMode(Request request, int sender_fd)
   if (request.args[1][0] == '+')
     this->_clients[sender_fd]->setMode(true, request.args[1][1]);
   else {
-    this->_clients[sender_fd]->setMode(false, request.args[2][1]);
+    this->_clients[sender_fd]->setMode(false, request.args[1][1]);
   }
   return _printMessage("221", this->_clients[sender_fd]->getNickName(), request.args[1] + " :Mode set successfully");
 }
@@ -239,12 +239,8 @@ std::string Server::_quit(Request request, int sender_fd)
         _sendToAllUsers(it->second, sender_fd, ret);
         it++;
     }
-    std::cout << "Leaving all channels for client: " << this->_clients[sender_fd]->getNickName() << std::endl;
     this->_clients[sender_fd]->leaveAllChannels();
-    std::cout << "Removing client: " << this->_clients[sender_fd]->getNickName() << std::endl;
     close(this->_clients[sender_fd]->getClientfd());
-    std::cout << "Client removed: " << this->_clients[sender_fd]->getNickName() << std::endl;
-    _removeFromPoll(sender_fd);
     return ("QUIT");
 };
 

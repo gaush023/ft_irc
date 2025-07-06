@@ -1,4 +1,4 @@
-NAME = ftirc
+NAME = ircserv
 :q:q
 :q
 :wq

@@ -16,19 +16,32 @@ void Server::_ClientRequest(int i)
     
     close(sender_fd);
     _removeFromPoll(i);
-  }
+
+    }
   else {
         _recvBuf[sender_fd] += std::string(buf, nbytes);
         size_t pos;
         while((pos = _recvBuf[sender_fd].find("\n")) != std::string::npos)
         {
-              std::string message = _recvBuf[sender_fd].substr(0, pos);
-              _recvBuf[sender_fd].erase(0, pos + 2);
-              std::string ret = _parsing(message, this->_pfds[i].fd);
-              if (send(sender_fd, ret.c_str(), ret.length(), 0) < 0)
-              { 
-                  std::cerr << "send() error: " << strerror(errno) << std::endl;
-              }
+            std::string message = _recvBuf[sender_fd].substr(0, pos);
+
+
+            if (pos > 0 && _recvBuf[sender_fd][pos - 1] == '\r')
+                _recvBuf[sender_fd].erase(0, pos + 1); 
+            else
+                _recvBuf[sender_fd].erase(0, pos + 1);  
+
+            std::string ret = _parsing(message, sender_fd);
+            if (ret == "QUIT")
+            {
+                close(sender_fd);
+                _removeFromPoll(i);
+                return;  
+            }
+            else if (send(sender_fd, ret.c_str(), ret.length(), 0) < 0)
+            { 
+                std::cerr << "send() error: " << strerror(errno) << std::endl;
+            }
         }
     }
     memset(buf, 0, sizeof(buf));
