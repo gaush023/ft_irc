@@ -14,14 +14,14 @@ channel/Channel.cpp \
 client/Client.cpp \
 file/File.cpp file/FileTransfer.cpp \
 request/Request.cpp \
-server/JoinCommand.cpp \
-server/KickCommand.cpp \
-server/PartCommand.cpp \
-server/PrivmsgCommand.cpp \
+commands/JoinCommand.cpp \
+commands/KickCommand.cpp \
+commands/PartCommand.cpp \
+commands/PrivmsgCommand.cpp \
 server/Sever.cpp \
-server/commands.cpp \
+commands/commands.cpp \
 server/getSocket.cpp \
-server/helpDesk.cpp \
+commands/helpDesk.cpp \
 server/msgHandling.cpp \
 server/pollHandling.cpp \
 server/requestHeadling.cpp \
