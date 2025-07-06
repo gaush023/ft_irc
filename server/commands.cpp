@@ -2,7 +2,9 @@
 
 std::string Server::_parsing(std::string message, int sender_fd)
 {
-  Request request(_splitRequest(message)); 
+    std::cout << "Parsing message: " << message << std::endl;
+    Request request(_splitRequest(message)); 
+
 
   if (request.invalidMessage)
     return _printMessage("421", "", ":Unknown command");

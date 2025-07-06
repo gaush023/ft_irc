@@ -20,20 +20,22 @@ void Server::_ClientRequest(int i)
         std::cout << "[" << currentDateTime() << "]: received " << nbytes << " bytes from socket " << sender_fd << std::endl;
         std::cout << "Message: " << std::string(buf, nbytes) << std::endl;
         std::cout << "sender_fd: " << sender_fd << std::endl;
+        std::cout << "Buffer size before: " << _recvBuf[sender_fd].size() << std::endl;
         _recvBuf[sender_fd] += std::string(buf, nbytes);
         std::cout << "Buffer for socket " << sender_fd << ": " << _recvBuf[sender_fd] << std::endl;
         size_t pos;
-        while((pos = _recvBuf[sender_fd].find("\r\n")) != std::string::npos)
+        while((pos = _recvBuf[sender_fd].find("\n")) != std::string::npos)
         {
+            std::cout << "Processing message: " << _recvBuf[sender_fd].substr(0, pos) << std::endl;
               std::string message = _recvBuf[sender_fd].substr(0, pos);
               _recvBuf[sender_fd].erase(0, pos + 2);
-
               std::string ret = _parsing(message, this->_pfds[i].fd);
               if (send(sender_fd, ret.c_str(), ret.length(), 0) == -1)
               {
                 std::cerr << "send() error: " << strerror(errno) << std::endl;
               }
         }
+        std::cout << "Buffer size after: " << _recvBuf[sender_fd].size() << std::endl;
     }
   memset(&buf, 0, 6000);
 };
