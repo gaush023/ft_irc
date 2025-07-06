@@ -2,23 +2,12 @@
 
 Server::Server() : _name(), _password(), _socketfd(0), _clients(), _pfds(NULL), _online_c(0), _prefix(":"), _allChannels(), _unavailableUserName(), _clientNicknames() {}
 
-static void rtrim(std::string &s)
-{
-    const std::string whitespace = " \t\n\r\f\v\u3000";
-    std::size_t end = s.find_last_not_of(whitespace);
-    if (end != std::string::npos)
-        s.erase(end + 1);
-    else
-        s.clear();
-}
 
 
 Server::Server(std::string Name, int max_online, std::string Port, std::string Password): _clients()
 {
     this->_name = Name;
     this->_max_online_c = max_online + 1;
-    std::string trimePassword = Password;
-    rtrim(trimePassword);
     this->_password = Password;
     this->_online_c = 0;
     this->_pfds = new pollfd[max_online + 1];
@@ -52,7 +41,7 @@ std::string Server::_printMessage(std::string num, std::string nickname, std::st
 {
   if(nickname.empty())
     nickname = "unknown";
-  return ":" + this->_name + " " + num + " " + nickname + " " + msg + "\n";
+  return ":" + this->_name + " " + num + " " + nickname + " " + msg + "\r\n";
 }
 
 void Server::_newClient(void)

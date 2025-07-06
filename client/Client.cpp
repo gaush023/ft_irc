@@ -100,15 +100,12 @@ void Client::joinChannel(std::string ChannelName, Channel *channel)
 
 void Client::leaveChannel(std::string ChannelName)
 {
-    std::cout << "he is leaving channel: " << ChannelName << std::endl;
     this->_joinedChannels.erase(ChannelName);
-    std::cout << "Wow, he left channel: " << ChannelName << std::endl;
 }
 
 std::string Client::leaveAllChannels()
 { 
     std::map<std::string, Channel *>::iterator it = this->_joinedChannels.begin();
-    std::cout << "Leaving all channels for client: " << this->_NickName << std::endl;
     while ( it != this->_joinedChannels.end())
     {
         std::pair<Client *, int> user(it->second->findUserRole(this->_clientfd));
@@ -124,12 +121,9 @@ std::string Client::leaveAllChannels()
         {
             it->second->removeVoice(this->_clientfd);
         }
-        std::cout << "Client: " << this->_NickName << " leaving channel: " << it->second->getName() << std::endl;
         user.first->leaveChannel(it->second->getName());
         it = this->_joinedChannels.begin();
-        printf("tt2222t");
     }
-    printf("ttt");
     return ("");
 }
 

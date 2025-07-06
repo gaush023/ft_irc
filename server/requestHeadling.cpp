@@ -5,7 +5,8 @@ void Server::_ClientRequest(int i)
   char buf[6000];
   int sender_fd = this->_pfds[i].fd;
   int nbytes = recv(sender_fd, buf, sizeof(buf), 0);
-
+    
+  std::cout << "[" << currentDateTime() << "]: socket " << sender_fd << " received " << nbytes << " bytes" << std::endl;
   if (nbytes <= 0)
   {
     if (nbytes == 0)
@@ -24,14 +25,13 @@ void Server::_ClientRequest(int i)
               std::string message = _recvBuf[sender_fd].substr(0, pos);
               _recvBuf[sender_fd].erase(0, pos + 2);
               std::string ret = _parsing(message, this->_pfds[i].fd);
-              if (send(sender_fd, ret.c_str(), ret.length(), 1) < 0)
+              if (send(sender_fd, ret.c_str(), ret.length(), 0) < 0)
               { 
                   std::cerr << "send() error: " << strerror(errno) << std::endl;
               }
         }
     }
-    std::cout << "[" << currentDateTime() << "]: socket " << sender_fd << " received: " << buf << std::endl;
-    memset(&buf, 0, 6000);
+    memset(buf, 0, sizeof(buf));
 };
 
 Request Server::_splitRequest(std::string req)
@@ -39,18 +39,26 @@ Request Server::_splitRequest(std::string req)
   Request request;
   size_t i = 0;
   size_t j = 0;
-  size_t len = req.length();
+
+    while (!req.empty())
+    {
+        char c = req[req.length() - 1];
+        if (c == '\n' || c == '\r')
+            req.erase(req.length() - 1, 1);
+        else
+            break;
+    }
 
   if (req[i] == ' ' || !req[i]) {
     request.invalidMessage = true;
     return (request);
   }
   j = i;
-  while(i < len && req[i])
+  while(req[i])
   {
     if(req[i] == ' ')
     {
-      if (i + 1 >= len || req[i + 1] == ' ') {
+      if (req[i + 1] == ' ') {
         request.invalidMessage = true;
         return (request);
       }

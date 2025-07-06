@@ -6,7 +6,7 @@ std::string Server::_parsing(std::string message, int sender_fd)
 
 
   if (request.invalidMessage)
-    return _printMessage("421", "", ":Unknown command");
+    return ("Invalid message format\n");
   else if (request.command == "PASS")
     return (_setPassword(request, sender_fd));
   else if (request.command == "NICK")
@@ -150,7 +150,8 @@ std::string Server::_setUserName(Request request, int sender_fd)
         return _printMessage("988", this->_clients[sender_fd]->getNickName(), ":You must be authenticated to set a username");
     if (this->_clients[sender_fd]->getRegistered())
         return _printMessage("462", this->_clients[sender_fd]->getNickName(), ":Unauthorized command (already registered)");
-    std::cout << "Setting username for client: " << this->_clients[sender_fd]->getNickName() << std::endl;       
+    if (request.args.size() < 4)
+        return _printMessage("461", this->_clients[sender_fd]->getNickName(), ":Not enough parameters");
     this->_clients[sender_fd]->setUserName(request.args[0]);
     this->_clients[sender_fd]->setFullName(request.args[3]);
     if(this->_clients[sender_fd]->getNickName() != "")
