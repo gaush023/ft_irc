@@ -2,8 +2,7 @@
 
 std::string Server::_parsing(std::string message, int sender_fd)
 {
-    std::cout << "Parsing message: " << message << std::endl;
-    Request request(_splitRequest(message)); 
+   Request request(_splitRequest(message)); 
 
 
   if (request.invalidMessage)
@@ -146,20 +145,21 @@ std::string Server::_setNickName(Request request, int sender_fd)
 
 std::string Server::_setUserName(Request request, int sender_fd)
 {
-  if (!this->_clients[sender_fd]->getAuth())
-    return _printMessage("988", this->_clients[sender_fd]->getNickName(), ":You must be authenticated to set a username");
-  if (this->_clients[sender_fd]->getRegistered())
-    return _printMessage("462", this->_clients[sender_fd]->getNickName(), ":Unauthorized command (already registered)");
-  
-  this->_clients[sender_fd]->setUserName(request.args[0]);
-  this->_clients[sender_fd]->setFullName(request.args[3]);
-  if(this->_clients[sender_fd]->getNickName() != "")
-  {
-    this->_clients[sender_fd]->setID(this->_clients[sender_fd]->getUserName() + "!" + this->_clients[sender_fd]->getNickName() + "@" + this->_clients[sender_fd]->getHost());
-    this->_clients[sender_fd]->setRegistered(true);
-    return _printMessage("001", this->_clients[sender_fd]->getNickName(), ":Welcome to the Internet Relay Network " + this->_clients[sender_fd]->getID());
-  }
-  return ("");
+
+    if (!this->_clients[sender_fd]->getAuth())
+        return _printMessage("988", this->_clients[sender_fd]->getNickName(), ":You must be authenticated to set a username");
+    if (this->_clients[sender_fd]->getRegistered())
+        return _printMessage("462", this->_clients[sender_fd]->getNickName(), ":Unauthorized command (already registered)");
+    std::cout << "Setting username for client: " << this->_clients[sender_fd]->getNickName() << std::endl;       
+    this->_clients[sender_fd]->setUserName(request.args[0]);
+    this->_clients[sender_fd]->setFullName(request.args[3]);
+    if(this->_clients[sender_fd]->getNickName() != "")
+    {
+        this->_clients[sender_fd]->setID(this->_clients[sender_fd]->getUserName() + "!" + this->_clients[sender_fd]->getNickName() + "@" + this->_clients[sender_fd]->getHost());
+        this->_clients[sender_fd]->setRegistered(true);
+        return _printMessage("001", this->_clients[sender_fd]->getNickName(), ":Welcome to the Internet Relay Network " + this->_clients[sender_fd]->getID());
+    }
+    return ("");
 }
 
 bool Server::_validMode(Request request)
@@ -232,9 +232,7 @@ std::string Server::_quit(Request request, int sender_fd)
         ret.append("\n");
     std::cout << ret << std::endl;
     std::map<std::string, Channel *> channels = this->_clients[sender_fd]->getJoinedChannels();
-    std::cout << "Channels size: " << channels.size() << std::endl;
     std::map<std::string, Channel *>::iterator it = channels.begin();
-    std::cout << "Channels iterator: " << it->first << std::endl;
     while (it != channels.end())
     {
         _sendToAllUsers(it->second, sender_fd, ret);

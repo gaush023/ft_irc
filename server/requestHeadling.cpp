@@ -24,15 +24,14 @@ void Server::_ClientRequest(int i)
               std::string message = _recvBuf[sender_fd].substr(0, pos);
               _recvBuf[sender_fd].erase(0, pos + 2);
               std::string ret = _parsing(message, this->_pfds[i].fd);
-              if ( message != "QUIT"  && send(sender_fd, ret.c_str(), ret.length(), 0) < 0)
+              if (send(sender_fd, ret.c_str(), ret.length(), 1) < 0)
               { 
                   std::cerr << "send() error: " << strerror(errno) << std::endl;
-                  std::cout << message << std::endl;
               }
         }
-        std::cout << "Buffer size after: " << _recvBuf[sender_fd].size() << std::endl;
     }
-  memset(&buf, 0, 6000);
+    std::cout << "[" << currentDateTime() << "]: socket " << sender_fd << " received: " << buf << std::endl;
+    memset(&buf, 0, 6000);
 };
 
 Request Server::_splitRequest(std::string req)
