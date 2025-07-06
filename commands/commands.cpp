@@ -101,7 +101,6 @@ std::string Server::_topic(Request request, int fd)
 
 std::string Server::_setPassword(Request request, int sender_fd)
 {
-  std::cout << "#"+this->_password+"#" << std::endl;
   if (request.args.size() < 1)
     return _printMessage("461", this->_clients[sender_fd]->getNickName(), ":Not enough parameters");
   if(this->_clients[sender_fd]->getRegistered())
@@ -186,28 +185,29 @@ std::string Server::_printUserModes(std::string ret, int sender_fd)
   return ret;
 }
 
-std::string Server::_setMode(Request request, int sender_fd)
-{
-  if (!this->_clients[sender_fd]->getRegistered())
-    return _printMessage("451", this->_clients[sender_fd]->getNickName(), ":You have not registered");
-  if (request.args.size() < 2)
-  {
-    std::string ret;
-    if (request.args.size() == 1 && request.args[0] == this->_clients[sender_fd]->getNickName())
-      ret = _printUserModes(ret, sender_fd);
-    ret.append(toString(461) + "ERR_NEEDMOREPARAMS\n\tPASS :Not enough parameters");
-    return ret;
-  }
-  if (request.args[0] != this->_clients[sender_fd]->getNickName())
-    return _printMessage("502", this->_clients[sender_fd]->getNickName(), ":Cannot change modes for other users");
-  if (!_validMode(request))
-    return _printMessage("501", this->_clients[sender_fd]->getNickName(), ":Unknown mode flag");
-  if (request.args[1][0] == '+')
-    this->_clients[sender_fd]->setMode(true, request.args[1][1]);
-  else {
-    this->_clients[sender_fd]->setMode(false, request.args[1][1]);
-  }
-  return _printMessage("221", this->_clients[sender_fd]->getNickName(), request.args[1] + " :Mode set successfully");
+std::string Server::_setMode(Request& request, int sender_fd) {
+    const std::string& nick = this->_clients[sender_fd]->getNickName();
+
+    if (!this->_clients[sender_fd]->getRegistered())
+        return _printMessage("451", nick, ":You have not registered");
+
+    if (request.args.size() == 1 && request.args[0] == nick)
+        return _printUserModes("", sender_fd);
+
+    if (request.args.size() < 2)
+        return _printMessage("461", nick, "MODE :Not enough parameters");
+
+    if (request.args[0] != nick)
+        return _printMessage("502", nick, ":Cannot change modes for other users");
+
+    if (!_validMode(request))
+        return _printMessage("501", nick, ":Unknown mode flag");
+
+    char flag = request.args[1][1];
+    bool add  = (request.args[1][0] == '+');
+    this->_clients[sender_fd]->setMode(add, flag);
+
+    return _printMessage("221", nick, request.args[1]);
 }
 
 std::string Server::_setOper(Request request, int sender_fd)
@@ -231,7 +231,6 @@ std::string Server::_quit(Request request, int sender_fd)
         ret.append(":" + request.args[0] + "\n");
     else
         ret.append("\n");
-    std::cout << ret << std::endl;
     std::map<std::string, Channel *> channels = this->_clients[sender_fd]->getJoinedChannels();
     std::map<std::string, Channel *>::iterator it = channels.begin();
     while (it != channels.end())

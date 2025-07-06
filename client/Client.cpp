@@ -80,7 +80,7 @@ void Client::setMode(int value, char mode)
     this->_modes.op = value;
   else if (mode == 'O' && value == 0)
     this->_modes.localOp = value;
-else if (mode == 's')
+  else if (mode == 's')
     this->_modes.server = value;
 }
 
@@ -93,7 +93,6 @@ int Client::isjoined(std::string ChannelName) const
 
 void Client::joinChannel(std::string ChannelName, Channel *channel)
 {
-    std::cout << "he is joining channel: " << ChannelName << std::endl;
     if (!isjoined(ChannelName))
         this->_joinedChannels.insert(std::pair<std::string, Channel *>(ChannelName, channel));
 };
