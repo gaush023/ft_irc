@@ -42,10 +42,7 @@ int Server::_createChannel( std::string ChannelName, int CreatorFd)
       if (it->second->getKey().empty())
       {
         int status = 0;
-        if (this->_clients[CreatorFd]->getisOperator() == true)
-          status = it->second->addOperator(this->_clients[CreatorFd]);
-        else
-          status = it->second->addUser(this->_clients[CreatorFd]);
+        status = it->second->addUser(this->_clients[CreatorFd]);
         if (status == USERJOINED)
           this->_clients[CreatorFd]->joinChannel(it->first, it->second);
         else if (status == USERALREADYJOINED)
@@ -79,10 +76,7 @@ int Server::_createPrvChannel(std::string ChannelName, std::string ChannelKey, i
       if (it->second->getKey() == ChannelKey)
       {
         int status = 0;
-        if (this->_clients[CreatorFd]->getisOperator() == true)
-          status = it->second->addOperator(this->_clients[CreatorFd]);
-        else
-          status = it->second->addUser(this->_clients[CreatorFd]);
+        status = it->second->addUser(this->_clients[CreatorFd]);
         if (status == USERJOINED)
           this->_clients[CreatorFd]->joinChannel(it->first, it->second);
         else if (status == USERALREADYJOINED)
