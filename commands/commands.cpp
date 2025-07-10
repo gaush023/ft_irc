@@ -6,7 +6,7 @@ std::string Server::_parsing(std::string message, int sender_fd)
 
 
   if (request.invalidMessage)
-    return ("Invalid message format\n");
+    return (_printMessage("421", this->_clients[sender_fd]->getNickName(), request.command + " :Unknown command"));
   else if (request.command == "PASS")
     return (_setPassword(request, sender_fd));
   else if (request.command == "NICK")
@@ -39,8 +39,12 @@ std::string Server::_parsing(std::string message, int sender_fd)
     return (_getFile(request, sender_fd));
   else if (request.command == "HELPDESK")
     return (_helpDesk(request, sender_fd));
-  else
-    return ("Invalid command\n");
+  else if (request.command == "PING")
+    return (_ping(request, sender_fd));
+  else if (request.command == "INVITE")
+    return (_invite(request, sender_fd));
+  else 
+    return (_printMessage("421", this->_clients[sender_fd]->getNickName(), request.command + " :Unknown command"));
 };
 
 std::string Server::_notice(Request request, int sender_fd)
@@ -99,130 +103,8 @@ std::string Server::_topic(Request request, int fd)
   return ("");
 };
 
-std::string Server::_setPassword(Request request, int sender_fd)
-{
-  if (request.args.size() < 1)
-    return _printMessage("461", this->_clients[sender_fd]->getNickName(), ":Not enough parameters");
-  if(this->_clients[sender_fd]->getRegistered())
-    return _printMessage("462", this->_clients[sender_fd]->getNickName(), ":Unauthorized command (already registered)");
-  if(request.args[0] != this->_password)
-    return _printMessage("464", this->_clients[sender_fd]->getNickName(), ":Password incorrect");
-  else {
-      this->_clients[sender_fd]->setAuth(true);
-  }
-  return ("");
-}
-
-std::string Server::_setNickName(Request request, int sender_fd)
-{
-  if (!this->_clients[sender_fd]->getAuth())
-    return _printMessage("988", this->_clients[sender_fd]->getNickName(), ":You must be authenticated to set a nickname");
-  if (request.args.size() < 1)
-    return _printMessage("431", this->_clients[sender_fd]->getNickName(), ":Not enough parameters");
-  
-  int pos = 0;
-  while(request.args[0][pos])
-  {
-    if (!isalnum(request.args[0][pos]) && request.args[0][pos] != '-' && request.args[0][pos] != '\r')
-      return _printMessage("432", this->_clients[sender_fd]->getNickName(), ":Erroneous nickname");
-    pos++;
-  }
-  if (std::find(this->_clientNicknames.begin(), this->_clientNicknames.end(), request.args[0]) != this->_clientNicknames.end())
-    return _printMessage("433", this->_clients[sender_fd]->getNickName(), request.args[0] + " :Nickname is already in use");
-  
-  this->_clients[sender_fd]->setNickName(request.args[0]);
-  this->_clientNicknames.push_back(this->_clients[sender_fd]->getNickName());
-  if(this->_clients[sender_fd]->getUserName() != "")
-  {
-    this->_clients[sender_fd]->setID(this->_clients[sender_fd]->getUserName() + "!" + this->_clients[sender_fd]->getNickName() + "@" + this->_clients[sender_fd]->getHost());
-    this->_clients[sender_fd]->setRegistered(true);
-    return _printMessage("001", this->_clients[sender_fd]->getNickName(), ":Welcome to the Internet Relay Network " + this->_clients[sender_fd]->getID());
-  }
-  return ("");
-}
 
 
-std::string Server::_setUserName(Request request, int sender_fd)
-{
-
-    if (!this->_clients[sender_fd]->getAuth())
-        return _printMessage("988", this->_clients[sender_fd]->getNickName(), ":You must be authenticated to set a username");
-    if (this->_clients[sender_fd]->getRegistered())
-        return _printMessage("462", this->_clients[sender_fd]->getNickName(), ":Unauthorized command (already registered)");
-    if (request.args.size() < 4)
-        return _printMessage("461", this->_clients[sender_fd]->getNickName(), ":Not enough parameters");
-    this->_clients[sender_fd]->setUserName(request.args[0]);
-    this->_clients[sender_fd]->setFullName(request.args[3]);
-    if(this->_clients[sender_fd]->getNickName() != "")
-    {
-        this->_clients[sender_fd]->setID(this->_clients[sender_fd]->getUserName() + "!" + this->_clients[sender_fd]->getNickName() + "@" + this->_clients[sender_fd]->getHost());
-        this->_clients[sender_fd]->setRegistered(true);
-        return _printMessage("001", this->_clients[sender_fd]->getNickName(), ":Welcome to the Internet Relay Network " + this->_clients[sender_fd]->getID());
-    }
-    return ("");
-}
-
-bool Server::_validMode(Request request)
-{
-  char c = request.args[1][1];
-  if (request.args[1].length() != 2 || (request.args[1][0] != '+' && request.args[1][0] != '-'))
-    return false;
-  if (c != 'i' && c != 'w' && c != 'r' && c != 'o' && c != 'O' && c != 's')
-    return false;
-  return true;
-}
-
-std::string Server::_printUserModes(std::string ret, int sender_fd)
-{
-  ret.append("Current modes for " + toString(this->_clients[sender_fd]->getMode('i')));
-  ret.append("\ni: " + toString(this->_clients[sender_fd]->getMode('i')));
-  ret.append("\nw: " + toString(this->_clients[sender_fd]->getMode('w')));
-  ret.append("\nr: " + toString(this->_clients[sender_fd]->getMode('r')));
-  ret.append("\no: " + toString(this->_clients[sender_fd]->getMode('o')));
-  ret.append("\nO: " + toString(this->_clients[sender_fd]->getMode('O')));
-  ret.append("\ns: " + toString(this->_clients[sender_fd]->getMode('s')));
-  ret.append("\n");
-  return ret;
-}
-
-std::string Server::_setMode(Request& request, int sender_fd) {
-    const std::string& nick = this->_clients[sender_fd]->getNickName();
-
-    if (!this->_clients[sender_fd]->getRegistered())
-        return _printMessage("451", nick, ":You have not registered");
-
-    if (request.args.size() == 1 && request.args[0] == nick)
-        return _printUserModes("", sender_fd);
-
-    if (request.args.size() < 2)
-        return _printMessage("461", nick, "MODE :Not enough parameters");
-
-    if (request.args[0] != nick)
-        return _printMessage("502", nick, ":Cannot change modes for other users");
-
-    if (!_validMode(request))
-        return _printMessage("501", nick, ":Unknown mode flag");
-
-    char flag = request.args[1][1];
-    bool add  = (request.args[1][0] == '+');
-    this->_clients[sender_fd]->setMode(add, flag);
-
-    return _printMessage("221", nick, request.args[1]);
-}
-
-std::string Server::_setOper(Request request, int sender_fd)
-{
-  if(!this->_clients[sender_fd]->getAuth())
-    return _printMessage("451", this->_clients[sender_fd]->getNickName(), ":You have not registered");
-  if (request.args.size() < 2)
-    return _printMessage("461", this->_clients[sender_fd]->getNickName(), "PASS :Not enough parameters");
-  if (request.args[0] != "ADMIN")
-    return _printMessage("461", this->_clients[sender_fd]->getNickName(), ":Username or password incorrect");
-  if (request.args[1] != "DEEZNUTS")
-    return _printMessage("464", this->_clients[sender_fd]->getNickName(), ":Username or password incorrect");
-  this->_clients[sender_fd]->setIsOperator(true);
-  return _printMessage("381", this->_clients[sender_fd]->getNickName(), ":You are now an operator");
-}
 
 std::string Server::_quit(Request request, int sender_fd)
 {

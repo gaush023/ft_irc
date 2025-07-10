@@ -1,6 +1,6 @@
 #include "../headers/Server.hpp"
 
-std::string Server::_privmsg(Request request, int fd)
+std::string PrivmsgCommand::execute(Request request, int fd, Server &server)
 {
   if (!this->_clients[fd]->getRegistered())
     return (_printMessage("451", this->_clients[fd]->getNickName(), ":You have not registered"));
@@ -17,7 +17,7 @@ std::string Server::_privmsg(Request request, int fd)
   return "";
 }
 
-std::string Server::_privToUser(std::string User, std::string msg, std::string cmd, int fd)
+std::string PrivmsgCommand::_privToUser(std::string User, std::string msg, std::string cmd, int fd)
 {
   int userFd = _findFdByNickName(User);
   if (userFd == USERNOTFOUND)
@@ -29,7 +29,7 @@ std::string Server::_privToUser(std::string User, std::string msg, std::string c
   return "";
 }
 
-std::string Server::_privToChannel(std::string ChannelName, std::string masseage, int fd)
+std::string PrivmsgCommand::_privToChannel(std::string ChannelName, std::string masseage, int fd)
 {
   std::map<std::string, Channel *>::iterator it = this->_allChannels.find(ChannelName);
   if (it != this->_allChannels.end())
@@ -37,7 +37,7 @@ std::string Server::_privToChannel(std::string ChannelName, std::string masseage
     std::pair<Client *, int> user = it->second->findUserRole(fd);
     if (user.second == -1)
       return (_printMessage("404", this->_clients[fd]->getNickName(), ChannelName.append(" :You're not on that channel")));
-    std::string msg("PRIVMSG " + ChannelName + " :" + masseage + "\n");
+    std::string msg("PRIVMSG " + ChannelName + " :" + masseage + "\r\n");
     _sendToAllUsers(it->second, fd, msg);
   }
   else

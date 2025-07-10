@@ -19,7 +19,7 @@
 #include <netdb.h>
 #include <poll.h>
 #include <time.h>
-
+#include <fcntl.h>
 
 class Client;
 class Channel;
@@ -71,6 +71,7 @@ class Server
     std::string _part(Request request, int sender_fd);
     std::string _topic(Request request, int sender_fd);
     std::string _kick(Request request, int sender_fd);
+    std::string _ping(Request request, int sender_fd);
     std::string _sendMessage(std::string num, std::string nickname, std::string msg);
     std::string _printMessage(std::string num, std::string nickname, std::string msg);
     std::string _parsing(std::string message, int sender_fd);    

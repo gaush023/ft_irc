@@ -26,6 +26,12 @@ void Server::_getSocket(std::string Port)
     this->_socketfd = socket(tmp->ai_family, tmp->ai_socktype, tmp->ai_protocol);
     if (this->_socketfd < 0)
       continue;
+    if (fcntl(this->_socketfd, F_SETFL, O_NONBLOCK) < 0)
+    {
+      std::cerr << "Failed to set socket to non-blocking mode" << std::endl;
+      close(this->_socketfd);
+      continue;
+    }
     setsockopt(this->_socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
     if (bind(this->_socketfd, tmp->ai_addr, tmp->ai_addrlen) < 0)
     {

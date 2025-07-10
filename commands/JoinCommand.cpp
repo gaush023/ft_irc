@@ -37,6 +37,7 @@ int Server::_createChannel( std::string ChannelName, int CreatorFd)
     Channel *channel = new Channel(ChannelName, this->_clients[CreatorFd]);
     this->_allChannels.insert(std::pair<std::string, Channel *>(ChannelName, channel));
     this->_clients[CreatorFd]->joinChannel(ChannelName, channel);
+    _sendall(CreatorFd, this->_clients[CreatorFd]->getUserPerfix() + "JOIN " + ChannelName + "\n");
   }
   else {
       if (it->second->getKey().empty())

@@ -18,8 +18,9 @@ commands/JoinCommand.cpp \
 commands/KickCommand.cpp \
 commands/PartCommand.cpp \
 commands/PrivmsgCommand.cpp \
-server/Sever.cpp \
 commands/commands.cpp \
+commands/PingCommand.cpp \
+server/Sever.cpp \
 server/getSocket.cpp \
 commands/helpDesk.cpp \
 server/msgHandling.cpp \

@@ -79,13 +79,19 @@ void Server::_newClient(void)
 
 void Server::startServer(void)
 {
+  const int TIMEOUT = 1000;
   while(true)
   {
-    int pollCount = poll(this->_pfds, this->_online_c, -1);
+    int pollCount = poll(this->_pfds, this->_online_c, TIMEOUT);
     if (pollCount == -1)
     {
       std::cerr << "poll error: " << strerror(errno) << std::endl;
       exit(-1); 
+    }
+    if (pollCount == 0)
+    {
+      std::cout << "No activity detected, waiting for clients..." << std::endl;
+      continue;
     }
     for (int i = 0; i < this->_online_c; i++)
     {
