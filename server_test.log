@@ -1,0 +1,26 @@
+[2025-07-13 17:37:05]: new connection from 127.0.0.1 on socket 4
+[2025-07-13 17:37:05]: socket 4 received 13 bytes
+[2025-07-13 17:37:06]: socket 4 received 11 bytes
+[2025-07-13 17:37:06]: socket 4 received 27 bytes
+[2025-07-13 17:37:07]: socket 4 received 11 bytes
+[2025-07-13 17:37:07]: socket 4 received 14 bytes
+[2025-07-13 17:37:08]: socket 4 received 42 bytes
+[2025-07-13 17:37:08]: new connection from 127.0.0.1 on socket 5
+[2025-07-13 17:37:08]: socket 5 received 13 bytes
+[2025-07-13 17:37:09]: socket 5 received 11 bytes
+[2025-07-13 17:37:09]: socket 5 received 25 bytes
+[2025-07-13 17:37:14]: socket 5 received 11 bytes
+[2025-07-13 17:37:15]: socket 5 received 40 bytes
+[2025-07-13 17:37:16]: new connection from 127.0.0.1 on socket 6
+[2025-07-13 17:37:16]: socket 6 received 13 bytes
+[2025-07-13 17:37:17]: socket 6 received 12 bytes
+[2025-07-13 17:37:17]: socket 6 received 27 bytes
+[2025-07-13 17:37:18]: socket 6 received 11 bytes
+[2025-07-13 17:37:18]: socket 4 received 0 bytes
+[2025-07-13 17:37:18]: socket 4 hung up
+[2025-07-13 17:37:18]: socket 5 received 0 bytes
+[2025-07-13 17:37:18]: socket 5 hung up
+[2025-07-13 17:37:18]: socket 6 received 19 bytes
+[2025-07-13 17:37:20]: socket 6 received 29 bytes
+[2025-07-13 17:37:23]: socket 6 received 0 bytes
+[2025-07-13 17:37:23]: socket 6 hung up

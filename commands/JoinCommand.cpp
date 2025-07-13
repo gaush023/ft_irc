@@ -44,11 +44,18 @@ int Server::_createChannel( std::string ChannelName, int CreatorFd)
         int status = 0;
         status = it->second->addUser(this->_clients[CreatorFd]);
         if (status == USERJOINED)
+        {
           this->_clients[CreatorFd]->joinChannel(it->first, it->second);
+          it->second->removeInvitedUser(this->_clients[CreatorFd]->getNickName());
+        }
         else if (status == USERALREADYJOINED)
           return (USERALREADYJOINED);
         else if (status == BANNEDFROMCHAN)
           return (BANNEDFROMCHAN);
+        else if (status == CHANNELISFULL)
+          return (CHANNELISFULL);
+        else if (status == USERNOTFOUND)
+          return (USERNOTFOUND);
         _sendall(CreatorFd, this->_clients[CreatorFd]->getUserPerfix() + "JOIN " + ChannelName + "\n");
         _sendall(CreatorFd, _printMessage("332", this->_clients[CreatorFd]->getNickName(), ChannelName + " :" + it->second->getTopic()));
         _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " = " + ChannelName, it->second->listUsers()));
@@ -78,11 +85,18 @@ int Server::_createPrvChannel(std::string ChannelName, std::string ChannelKey, i
         int status = 0;
         status = it->second->addUser(this->_clients[CreatorFd]);
         if (status == USERJOINED)
+        {
           this->_clients[CreatorFd]->joinChannel(it->first, it->second);
+          it->second->removeInvitedUser(this->_clients[CreatorFd]->getNickName());
+        }
         else if (status == USERALREADYJOINED)
           return (USERALREADYJOINED);
         else if (status == BANNEDFROMCHAN)
           return (BANNEDFROMCHAN);
+        else if (status == CHANNELISFULL)
+          return (CHANNELISFULL);
+        else if (status == USERNOTFOUND)
+          return (USERNOTFOUND);
         _sendall(CreatorFd, this->_clients[CreatorFd]->getUserPerfix() + "JOIN " + ChannelName + "\n");
         _sendall(CreatorFd, _printMessage("332", this->_clients[CreatorFd]->getNickName(), ChannelName + " :" + it->second->getTopic()));
         _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " = " + ChannelName, it->second->listUsers()));

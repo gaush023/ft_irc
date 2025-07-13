@@ -330,7 +330,8 @@ std::string Server::_invite(Request request, int sender_fd)
     return _printMessage("443", this->_clients[sender_fd]->getNickName(), targetNick + " " + channelName + " :is already on channel");
   
   it->second->addInvitedUser(targetNick);
-  _sendall(targetFd, this->_clients[sender_fd]->getUserPerfix() + "INVITE " + targetNick + " " + channelName + "\n");
+  std::string inviteMsg = ":" + this->_clients[sender_fd]->getNickName() + "!" + this->_clients[sender_fd]->getUserName() + "@" + this->_clients[sender_fd]->getHost() + " INVITE " + targetNick + " " + channelName + "\r\n";
+  _sendall(targetFd, inviteMsg);
   return _printMessage("341", this->_clients[sender_fd]->getNickName(), targetNick + " " + channelName);
 }
 
