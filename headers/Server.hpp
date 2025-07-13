@@ -19,6 +19,7 @@
 #include <netdb.h>
 #include <poll.h>
 #include <time.h>
+#include <fcntl.h>
 
 
 class Client;
@@ -92,6 +93,8 @@ class Server
     int _findFdByNickName(std::string nickName);
     std::string _privmsg(Request request, int sender_fd);
     std::string _notice(Request request, int sender_fd);
+    std::string _invite(Request request, int sender_fd);
+    std::string _channelMode(Request request, int sender_fd);
     std::string _privToUser(std::string user, std::string message, std::string command, int sender_fd);
     std::string _privToChannel(std::string channelName, std::string message, int sender_fd);
     std::string _sendToAllUsers(Channel *channel, int senderFd, std::string message);

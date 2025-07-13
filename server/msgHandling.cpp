@@ -30,21 +30,7 @@ int Server::_sendall(int destfd, std::string msg)
           continue;
         if (errno == EAGAIN || errno == EWOULDBLOCK)
         {
-          struct pollfd pfd;
-          pfd.fd = destfd;
-          pfd.events = POLLOUT;
-          int rv = poll(&pfd, 1, 500);
-          if (rv > 0 && (pfd.revents & POLLOUT))
-          {
-            continue; 
-          }
-          else if (rv == 0)
-          {
-            return -1; 
-          }
-          else {
-            return -1; 
-          }
+          return -1;
         }
         return -1; 
       }

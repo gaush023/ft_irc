@@ -10,7 +10,11 @@ Server::Server(std::string Name, int max_online, std::string Port, std::string P
     this->_max_online_c = max_online + 1;
     this->_password = Password;
     this->_online_c = 0;
-    this->_pfds = new pollfd[max_online];
+    try {
+        this->_pfds = new pollfd[max_online];
+    } catch (const std::bad_alloc& e) {
+        throw std::runtime_error("Memory allocation failed for pollfd array");
+    }
     for (int i = 0; i < max_online; i++)
     {
         this->_pfds[i].fd = -1;
@@ -65,6 +69,12 @@ void Server::_newClient(void)
     return;
   }
   else {
+    if (fcntl(newfd, F_SETFL, O_NONBLOCK) < 0)
+    {
+      std::cerr << "fcntl failed for client socket: " << strerror(errno) << std::endl;
+      close(newfd);
+      return;
+    }
     _addToPoll(newfd);    
     std::string welcomeMsg = _welcomeMsg();
     if (send(newfd, welcomeMsg.c_str(), welcomeMsg.length(), 0) == -1)

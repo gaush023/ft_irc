@@ -27,6 +27,12 @@ void Server::_getSocket(std::string Port)
     if (this->_socketfd < 0)
       continue;
     setsockopt(this->_socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+    if (fcntl(this->_socketfd, F_SETFL, O_NONBLOCK) < 0)
+    {
+      std::cerr << "fcntl failed: " << strerror(errno) << std::endl;
+      close(this->_socketfd);
+      continue;
+    }
     if (bind(this->_socketfd, tmp->ai_addr, tmp->ai_addrlen) < 0)
     {
       close(this->_socketfd);

@@ -1,15 +1,15 @@
 #include "../headers/Channel.hpp"
 
-Channel::Channel() : _prefix(), _creator(), _onlineUsers(), _name(), _key(), _topic(), _members(), _bannedUsers(), _operators(), _voices() {};
+Channel::Channel() : _prefix(), _creator(), _onlineUsers(), _name(), _key(), _topic(), _members(), _bannedUsers(), _operators(), _voices(), _invitedUsers(), _inviteOnly(false), _topicRestricted(false), _userLimit(0) {};
 
 Channel::Channel( const Channel &x){ *this = x; };
 
-Channel::Channel( std::string channelName, Client *Creator) : _prefix(), _creator(Creator), _onlineUsers(1), _name(channelName), _key(), _topic(), _members(), _bannedUsers(), _operators(), _voices() 
+Channel::Channel( std::string channelName, Client *Creator) : _prefix(), _creator(Creator), _onlineUsers(1), _name(channelName), _key(), _topic(), _members(), _bannedUsers(), _operators(), _voices(), _invitedUsers(), _inviteOnly(false), _topicRestricted(false), _userLimit(0) 
 {
   this->_operators.insert(std::pair<int, Client *>(Creator->getClientfd(), Creator));
 }
 
-Channel::Channel( std::string channelName, std::string key, Client *Creator) : _prefix(), _creator(Creator), _onlineUsers(1), _name(channelName), _key(key), _topic(), _members(), _bannedUsers(), _operators(), _voices() 
+Channel::Channel( std::string channelName, std::string key, Client *Creator) : _prefix(), _creator(Creator), _onlineUsers(1), _name(channelName), _key(key), _topic(), _members(), _bannedUsers(), _operators(), _voices(), _invitedUsers(), _inviteOnly(false), _topicRestricted(false), _userLimit(0) 
 {
   this->_operators.insert(std::pair<int, Client *>(Creator->getClientfd(), Creator));
 };
@@ -47,15 +47,47 @@ void Channel::setOnlineUsers(int onlineUsers) { this->_onlineUsers = onlineUsers
 void Channel::setName(std::string name) { this->_name = name; };
 void Channel::setKey(std::string key) { this->_key = key; };
 void Channel::setTopic(std::string topic) { this->_topic = topic; };
+void Channel::setInviteOnly(bool inviteOnly) { this->_inviteOnly = inviteOnly; };
+void Channel::setTopicRestricted(bool topicRestricted) { this->_topicRestricted = topicRestricted; };
+void Channel::setUserLimit(int userLimit) { this->_userLimit = userLimit; };
+
+bool Channel::getInviteOnly() const { return this->_inviteOnly; };
+bool Channel::getTopicRestricted() const { return this->_topicRestricted; };
+std::vector<std::string> const &Channel::getInvitedUsers() const { return this->_invitedUsers; };
+std::vector<std::string> const &Channel::getBannedUsers() const { return this->_bannedUsers; };
+int Channel::getUserLimit() const { return this->_userLimit; };
+
+void Channel::addInvitedUser(std::string nickname) {
+  if (std::find(this->_invitedUsers.begin(), this->_invitedUsers.end(), nickname) == this->_invitedUsers.end()) {
+    this->_invitedUsers.push_back(nickname);
+  }
+};
+
+void Channel::removeInvitedUser(std::string nickname) {
+  std::vector<std::string>::iterator it = std::find(this->_invitedUsers.begin(), this->_invitedUsers.end(), nickname);
+  if (it != this->_invitedUsers.end()) {
+    this->_invitedUsers.erase(it);
+  }
+};
+
+bool Channel::isInvited(std::string nickname) const {
+  return std::find(this->_invitedUsers.begin(), this->_invitedUsers.end(), nickname) != this->_invitedUsers.end();
+};
 
 int Channel::addUser(Client *member)
 {
   if (std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), member->getNickName()) != this->_bannedUsers.end())
     return BANNEDFROMCHAN;
+  if (this->_inviteOnly && !this->isInvited(member->getNickName()))
+    return USERNOTFOUND;
+  if (this->_userLimit > 0 && this->_onlineUsers >= this->_userLimit)
+    return CHANNELISFULL;
   if (this->_members.find(member->getClientfd()) == this->_members.end())
   {
     this->_members.insert(std::pair<int, Client *>(member->getClientfd(), member));
     this->_onlineUsers++;
+    if (this->_inviteOnly)
+      this->removeInvitedUser(member->getNickName());
     return USERJOINED;
   }
   return USERALREADYJOINED;

@@ -2,18 +2,21 @@
 
 void Server::_addToPoll(int newfd)
 {
-  if(this->_online_c == this->_max_online_c)
+  if(this->_online_c >= this->_max_online_c)
   {
-    this->_max_online_c *= 2;
-    this->_pfds = (struct pollfd *)realloc(this->_pfds, sizeof(struct pollfd) * this->_max_online_c);
-    if (this->_pfds == NULL)
-    {
-      std::cerr << "Error reallocating memory for pollfd array" << std::endl;
-    }
+    std::cerr << "Maximum client limit reached" << std::endl;
+    close(newfd);
+    return;
   }
   this->_pfds[this->_online_c].fd = newfd;
   this->_pfds[this->_online_c].events = POLLIN;
-  this->_clients.insert(std::pair<int, Client *>(newfd, new Client(newfd)));
+  try {
+    this->_clients.insert(std::pair<int, Client *>(newfd, new Client(newfd)));
+  } catch (const std::bad_alloc& e) {
+    std::cerr << "Memory allocation failed for new client" << std::endl;
+    close(newfd);
+    return;
+  }
   this->_online_c++;
 }
 

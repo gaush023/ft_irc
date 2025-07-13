@@ -34,7 +34,12 @@ int Server::_createChannel( std::string ChannelName, int CreatorFd)
   {
     if (ChannelName[0] != '&' && ChannelName[0] != '#' && ChannelName[0] != '+' && ChannelName[0] != '!')
       return (BADCHANMASK);
-    Channel *channel = new Channel(ChannelName, this->_clients[CreatorFd]);
+    Channel *channel;
+    try {
+      channel = new Channel(ChannelName, this->_clients[CreatorFd]);
+    } catch (const std::bad_alloc& e) {
+      return _sendall(CreatorFd, _printMessage("500", this->_clients[CreatorFd]->getNickName(), ":Internal server error")) ? USERNOTFOUND : USERNOTFOUND;
+    }
     this->_allChannels.insert(std::pair<std::string, Channel *>(ChannelName, channel));
     this->_clients[CreatorFd]->joinChannel(ChannelName, channel);
   }
@@ -52,6 +57,16 @@ int Server::_createChannel( std::string ChannelName, int CreatorFd)
           return (USERALREADYJOINED);
         else if (status == BANNEDFROMCHAN)
           return (BANNEDFROMCHAN);
+        else if (status == USERNOTFOUND)
+        {
+          _sendall(CreatorFd, _printMessage("473", this->_clients[CreatorFd]->getNickName(), ChannelName + " :Cannot join channel (+i)"));
+          return (USERNOTFOUND);
+        }
+        else if (status == CHANNELISFULL)
+        {
+          _sendall(CreatorFd, _printMessage("471", this->_clients[CreatorFd]->getNickName(), ChannelName + " :Cannot join channel (+l)"));
+          return (CHANNELISFULL);
+        }
         _sendall(CreatorFd, this->_clients[CreatorFd]->getUserPerfix() + "JOIN " + ChannelName + "\n");
         _sendall(CreatorFd, _printMessage("332", this->_clients[CreatorFd]->getNickName(), ChannelName + " :" + it->second->getTopic()));
         _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " = " + ChannelName, it->second->listUsers()));
@@ -71,7 +86,12 @@ int Server::_createPrvChannel(std::string ChannelName, std::string ChannelKey, i
   {
     if (ChannelName[0] != '&' && ChannelName[0] != '#' && ChannelName[0] != '+' && ChannelName[0] != '!')
       return (BADCHANMASK);
-    Channel *channel = new Channel(ChannelName, ChannelKey, this->_clients[CreatorFd]);
+    Channel *channel;
+    try {
+      channel = new Channel(ChannelName, ChannelKey, this->_clients[CreatorFd]);
+    } catch (const std::bad_alloc& e) {
+      return _sendall(CreatorFd, _printMessage("500", this->_clients[CreatorFd]->getNickName(), ":Internal server error")) ? USERNOTFOUND : USERNOTFOUND;
+    }
     this->_allChannels.insert(std::pair<std::string, Channel *>(ChannelName, channel));
     this->_clients[CreatorFd]->joinChannel(ChannelName, channel);
   }
@@ -89,6 +109,11 @@ int Server::_createPrvChannel(std::string ChannelName, std::string ChannelKey, i
           return (USERALREADYJOINED);
         else if (status == BANNEDFROMCHAN)
           return (BANNEDFROMCHAN);
+        else if (status == USERNOTFOUND)
+        {
+          _sendall(CreatorFd, _printMessage("473", this->_clients[CreatorFd]->getNickName(), ChannelName + " :Cannot join channel (+i)"));
+          return (USERNOTFOUND);
+        }
         _sendall(CreatorFd, this->_clients[CreatorFd]->getUserPerfix() + "JOIN " + ChannelName + "\n");
         _sendall(CreatorFd, _printMessage("332", this->_clients[CreatorFd]->getNickName(), ChannelName + " :" + it->second->getTopic()));
         _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " = " + ChannelName, it->second->listUsers()));
