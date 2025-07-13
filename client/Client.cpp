@@ -1,7 +1,7 @@
-#include "../headers/Client.hpp"
+#include "../include/Client.hpp"
 
-Client::Client(): _clientfd(0), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _FullName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(),_modes(), _joinedChannels() {};
-Client::Client(int fd): _clientfd(fd), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _FullName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(),_modes(), _joinedChannels() {};
+Client::Client(): _clientfd(0), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _FullName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(), _joinedChannels() {};
+Client::Client(int fd): _clientfd(fd), _Auth(false), _Registered(false), _isOperator(false), _NickName(), _UserName(), _FullName(), _Host("deez.nuts"), _ID(), _remoteAddr(), _addrlen(), _joinedChannels() {};
 Client::Client(const Client& x): _Host(x._Host) { *this = x; };
 
 Client &Client::operator=( const Client& rhs)
@@ -46,8 +46,6 @@ void Client::setAuth(int Auth) { this->_Auth = Auth; };
 void Client::setIsOperator(int isOperator) 
 { 
   this->_isOperator = isOperator;
-  this->_modes.op = isOperator;
-  this->_modes.localOp = isOperator;
 };
 
 int Client::isjoined(std::string ChannelName) const
@@ -145,11 +143,4 @@ std::map<std::string, Channel *> Client::getJoinedChannels() const
 {
   return this->_joinedChannels;
 }
-
-bool Channel::hasUser(int fd)
-{
-  std::map<int, Client*>::const_itreator it = _members.find(fd);
-  return it != _members.end();
-}
-
 

@@ -1,4 +1,4 @@
-#include "../headers/Channel.hpp"
+#include "../include/Channel.hpp"
 
 Channel::Channel() : _prefix(), _creator(), _onlineUsers(), _name(), _key(), _topic(), _members(), _bannedUsers(), _operators(), _voices() {};
 
@@ -163,3 +163,11 @@ bool Channel::isModerated() const { return _modes.moderated; }
 bool Channel::isKeyProtected() const { return _modes.keyProtected; }
 bool Channel::isUserLimitEnabled() const { return _modes.userLimitEnabled; }
 int Channel::getUserLimit() const { return _modes.userLimit; }
+
+bool Channel::hasUser(int fd)
+{
+  std::map<int, Client *>::const_iterator it = _members.find(fd);
+  return it != _members.end();
+}
+
+

@@ -30,7 +30,7 @@ class File;
 #include "Request.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
-#include "File.hpp"
+#include "../commands/file/File.hpp"
 
 class Server
 {
@@ -58,23 +58,7 @@ class Server
     void _newClient(void);
 		void _ClientRequest(int i);
     int _sendall(int destfd, std::string message);
-    void _broadcastmsg(int sender_fd, std::string buf, int nbytes);
-    // std::string _setUserName(Request request, int sender_fd);
-    //std::string _setNickName(Request request, int sender_fd);
-    //std::string _setFullName(Request request, int sender_fd);
-    //std::string _setPassword(Request request, int sender_fd);
-    //std::string _setOper(Request request, int sender_fd);
-    //std::string _setMode(Request &request, int sender_fd);
-    //std::string _joinChannel(Request request, int sender_fd);
-    //bool _validMode(Request request);
-    //std::string _quit(Request request, int sender_fd);
-    //std::string _part(Request request, int sender_fd);
-    //std::string _topic(Request request, int sender_fd);
-    //std::string _kick(Request request, int sender_fd);
-    //std::string _ping(Request request, int sender_fd);
-    //std::string _sendMessage(std::string num, std::string nickname, std::string msg);
-    //std::string _printMessage(std::string num, std::string nickname, std::string msg);
-    //std::string _parsing(std::string message, int sender_fd);    
+    void _broadcastmsg(int sender_fd, std::string buf, int nbytes);  
     Request _splitRequest(std::string req);
     std::string _printHelpInfo();
     std::string _printUserModes(std::string ret, int sender_fd);
@@ -110,5 +94,11 @@ class Server
     Client *getClientByFd(int fd) const;
     Channel *getChannelByName(std::string channelName) const;
     Client *getClientByNickName(std::string nickName) const;
+
+  public:
+    std::string getHelpMessage() const;
+    std::string getServerInfo() const;
+    std::string getChannelInfo(const std::string& channelName, int sender_fd) const;
+    std::string listAllChannels() const;
 };
 

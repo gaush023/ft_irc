@@ -1,4 +1,4 @@
-#include "../headers/File.hpp"
+#include "File.h"
 
 File::File() {};
 File::File(std::string Name, std::string Path, std::string Sender, std::string Receiver)

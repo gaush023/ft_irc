@@ -1,43 +1,22 @@
-NAME = ircserv
-:q:q
-:q
-:wq
+NAME := ircserv
+CXX := c++
+CXXFLAGS := -Wall -Wextra -Werror -std=c++98
 
+SRC_DIRS := . channel client file request commands server
+SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
+OBJS := $(SRCS:.cpp=.o)
 
-
-CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98
-
-SRCS = \
-main.cpp \
-channel/Channel.cpp \
-client/Client.cpp \
-file/File.cpp file/FileTransfer.cpp \
-request/Request.cpp \
-commands/JoinCommand.cpp \
-commands/KickCommand.cpp \
-commands/PartCommand.cpp \
-commands/PrivmsgCommand.cpp \
-commands/commands.cpp \
-commands/PingCommand.cpp \
-server/Sever.cpp \
-server/getSocket.cpp \
-commands/helpDesk.cpp \
-server/msgHandling.cpp \
-server/pollHandling.cpp \
-server/requestHeadling.cpp \
-server/sendAll.cpp \
-server/utils.cpp
-
-OBJS = $(SRCS:.cpp=.o)
+INCLUDES := -Iinclude -Icommands/include
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $@
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
 	rm -f $(OBJS)

@@ -5,6 +5,6 @@
 class QuitCommand : public ICommand
 {
   public:
-    std::string execute(Request request, int sender_fd) override;
+    std::string execute(Request &request, int sender_fd) = 0;
     
 };

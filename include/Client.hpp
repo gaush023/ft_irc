@@ -27,7 +27,6 @@ class Client
     std::string _ID;
     struct  sockaddr_storage _remoteAddr;
     socklen_t _addrlen;
-    struct Modes _modes;
     std::map<std::string, Channel *> _joinedChannels;
   
   public:
@@ -67,6 +66,5 @@ class Client
   public:
     int isjoined(std::string ChannelName) const;
     std::string JoinedChannels() const;
-    bool hasUser(int fd);
 };
     

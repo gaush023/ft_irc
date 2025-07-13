@@ -163,3 +163,84 @@ Client *Server::getClientByNickName(const std::string &nickname) const
   }
   return NULL;
 }
+
+static size_t visibleLength(const std::string& s) {
+    size_t len = 0;
+    bool inEsc = false;
+    for (std::string::size_type i = 0; i < s.size(); ++i) {
+        char c = s[i];
+        if (!inEsc && c == '\x1b') {
+            inEsc = true;
+        }
+        else if (inEsc && c == 'm') {
+            inEsc = false;
+        }
+        else if (!inEsc) {
+            ++len;
+        }
+    }
+    return len;
+}
+
+static std::string frameLine(const std::string& content, size_t width) {
+    size_t vis = visibleLength(content);
+    size_t pad = (vis < width ? width - vis : 0);
+    std::string spaces;
+    for (size_t i = 0; i < pad; ++i) spaces += ' ';
+    return std::string("█ ") + content + spaces + " █\n";
+}
+
+std::string Server::getServerInfo() const {
+    std::ostringstream oss;
+    const size_t W = 50;
+    oss << BLUE
+        << frameLine("Server Name: "     + _name,            W)
+        << frameLine("Online Users: "    + toString(_online_c - 1), W)
+        << frameLine("Max Online Users: "+ toString(_max_online_c),  W)
+        << frameLine("Number of Channels: " + toString(_allChannels.size()), W)
+        << RESET;
+    return oss.str();
+}
+
+std::string Server::getChannelInfo(const std::string& name, int fd) const {
+    std::ostringstream oss;
+    const size_t W = 70;
+    oss << BLUE;
+    std::map<std::string, Channel*>::const_iterator it = _allChannels.find(name);
+    if (it != _allChannels.end() && _clients.at(fd)->isjoined(name)) {
+        oss << frameLine("Channel Name: "    + it->second->getName(),                  W)
+            << frameLine("Channel Creator: " + it->second->getCreator()->getFullName(), W)
+            << frameLine("Channel Topic: "   + it->second->getTopic(),                 W)
+            << frameLine("Online Users: "    + toString(it->second->getOnlineUsers()),W);
+    } else if (it == _allChannels.end()) {
+        oss << frameLine("No such channel: " + name, W);
+    } else {
+        oss << frameLine("You need to join first!", W);
+    }
+    oss << RESET;
+    return oss.str();
+}
+
+std::string Server::listAllChannels() const {
+    std::ostringstream oss;
+    const size_t W = 86;
+    oss << BLUE << frameLine("Channel Name | Online | Creator | Topic", W);
+    if (_allChannels.empty()) {
+        oss << frameLine("NO CHANNELS", W);
+    } else {
+        for (std::map<std::string,Channel*>::const_iterator it=_allChannels.begin();
+             it!=_allChannels.end(); ++it)
+        {
+            Channel* ch = it->second;
+            oss << frameLine(
+                it->first + " | "
+                + toString(ch->getOnlineUsers()) + " | "
+                + ch->getCreator()->getFullName() + " | "
+                + ch->getTopic(),
+                W
+            );
+        }
+    }
+    oss << RESET;
+    return oss.str();
+}

@@ -93,12 +93,14 @@ class Channel
     void setKey(std::string key);
     void setTopic(std::string topic);
 
-  public 
+  public: 
     bool isInviteOnly() const;
     bool isTopicOpsOnly() const;
     bool isModerated() const;
     bool isKeyProtected() const;
     bool isUserLimitEnabled() const;
     int getUserLimit() const;
+    bool hasUser(int fd);
+
 };
 

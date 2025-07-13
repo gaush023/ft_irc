@@ -1,4 +1,4 @@
-#include "../headers/Request.hpp"
+#include "../include/Request.hpp"
 
 Request::Request() : args(), command(), invalidMessage(false) {}
 Request::Request( const Request &other) { *this = other; }

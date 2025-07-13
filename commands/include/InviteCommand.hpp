@@ -10,6 +10,6 @@ class InviteCommand : public ICommand
     Server &_server;
   
   public:
-    std::string execute(Request request, int sender_fd) override;
+    std::string execute(Request &request, int sender_fd) = 0;
     InviteCommand(Server &server);
 };

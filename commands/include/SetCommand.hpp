@@ -5,6 +5,5 @@
 class SetCommand : public ICommand
 {
   public:
-    std::string execute(Request request, int sender_fd) override;
-    s
+    std::string execute(Request &request, int sender_fd) = 0;
 };
