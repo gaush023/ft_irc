@@ -19,6 +19,7 @@
 #include <netdb.h>
 #include <poll.h>
 #include <time.h>
+#include <fcntl.h>
 
 
 class Client;

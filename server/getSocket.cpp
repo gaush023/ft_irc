@@ -46,6 +46,12 @@ void Server::_getSocket(std::string Port)
     std::cerr << "Failed to listen on socket" << std::endl;
     exit(-1);
   }
+  
+  if (fcntl(this->_socketfd, F_SETFL, O_NONBLOCK) == -1)
+  {
+    std::cerr << "Failed to set non-blocking mode on server socket" << std::endl;
+    exit(-1);
+  }
 };
 
 

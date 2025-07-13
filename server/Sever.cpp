@@ -65,6 +65,12 @@ void Server::_newClient(void)
     return;
   }
   else {
+    if (fcntl(newfd, F_SETFL, O_NONBLOCK) == -1)
+    {
+      std::cerr << "Failed to set non-blocking mode on client socket" << std::endl;
+      close(newfd);
+      return;
+    }
     _addToPoll(newfd);    
     std::string welcomeMsg = _welcomeMsg();
     if (send(newfd, welcomeMsg.c_str(), welcomeMsg.length(), 0) == -1)
