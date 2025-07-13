@@ -22,7 +22,6 @@ std::string Server::_kickedFromChannel(std::string ChannelName, std::string mess
           else
             reply.append(" " + message + "\n");
           _sendToAllUsers(it->second, i, reply);
-          it->second->banUser(this->_clients[ret]);
           ret = _partChannel(ChannelName, ret, "", 0);
           user++;
         }

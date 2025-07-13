@@ -114,6 +114,11 @@ int Server::_createPrvChannel(std::string ChannelName, std::string ChannelKey, i
           _sendall(CreatorFd, _printMessage("473", this->_clients[CreatorFd]->getNickName(), ChannelName + " :Cannot join channel (+i)"));
           return (USERNOTFOUND);
         }
+        else if (status == CHANNELISFULL)
+        {
+          _sendall(CreatorFd, _printMessage("471", this->_clients[CreatorFd]->getNickName(), ChannelName + " :Cannot join channel (+l)"));
+          return (CHANNELISFULL);
+        }
         _sendall(CreatorFd, this->_clients[CreatorFd]->getUserPerfix() + "JOIN " + ChannelName + "\n");
         _sendall(CreatorFd, _printMessage("332", this->_clients[CreatorFd]->getNickName(), ChannelName + " :" + it->second->getTopic()));
         _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " = " + ChannelName, it->second->listUsers()));

@@ -98,10 +98,16 @@ int Channel::addOperator(Client *member)
 {
   if (std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), member->getNickName()) != this->_bannedUsers.end())
     return BANNEDFROMCHAN;
+  if (this->_inviteOnly && !this->isInvited(member->getNickName()))
+    return USERNOTFOUND;
+  if (this->_userLimit > 0 && this->_onlineUsers >= this->_userLimit)
+    return CHANNELISFULL;
   if (this->_operators.find(member->getClientfd()) == this->_operators.end())
   {
     this->_operators.insert(std::pair<int, Client *>(member->getClientfd(), member));
     this->_onlineUsers++;
+    if (this->_inviteOnly)
+      this->removeInvitedUser(member->getNickName());
     return USERJOINED;
   }
   return USERALREADYJOINED;
@@ -129,9 +135,9 @@ void Channel::removeVoice(int i)
 
 void Channel::removeBannedUser(std::string nickname)
 {
-  if (std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), nickname) != this->_bannedUsers.end())
-    return;
-  this->_bannedUsers.erase(std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), nickname));
+  std::vector<std::string>::iterator it = std::find(this->_bannedUsers.begin(), this->_bannedUsers.end(), nickname);
+  if (it != this->_bannedUsers.end())
+    this->_bannedUsers.erase(it);
 }
 
 void Channel::removeUser(int i)
