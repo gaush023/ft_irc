@@ -17,7 +17,7 @@ std::string Server::_parsing(std::string message, int sender_fd)
     return (_setOper(request, sender_fd));
   else if (request.command == "MODE")
   {
-    if (request.args.size() > 0 && (request.args[0][0] == '#' || request.args[0][0] == '&'))
+    if (request.args.size() > 0 && (request.args[0][0] == '#' || request.args[0][0] == '&' || request.args[0][0] == '+' || request.args[0][0] == '!'))
       return (_channelMode(request, sender_fd));
     else
       return (_setMode(request, sender_fd));
@@ -201,52 +201,24 @@ std::string Server::_setMode(Request& request, int sender_fd) {
     if (request.args.size() < 1)
         return _printMessage("461", nick, "MODE :Not enough parameters");
 
-    // Check if it's a channel mode (starts with # & + !)
-    if (request.args[0][0] == '#' || request.args[0][0] == '&' || 
-        request.args[0][0] == '+' || request.args[0][0] == '!')
-    {
-        // Handle channel modes
-        std::map<std::string, Channel *>::iterator it = this->_allChannels.find(request.args[0]);
-        if (it == this->_allChannels.end())
-            return _printMessage("403", nick, request.args[0] + " :No such channel");
-        
-        std::pair<Client *, int> user = it->second->findUserRole(sender_fd);
-        if (user.second == -1)
-            return _printMessage("442", nick, request.args[0] + " :You're not on that channel");
-        
-        if (request.args.size() == 1)
-        {
-            // Return current channel modes (simplified)
-            return _printMessage("324", nick, request.args[0] + " +");
-        }
-        
-        if (user.second != 1) // Not an operator
-            return _printMessage("482", nick, request.args[0] + " :You're not channel operator");
-        
-        // Channel operator can set modes - simplified implementation
-        return "";
-    }
-    else
-    {
-        // Handle user modes
-        if (request.args.size() == 1 && request.args[0] == nick)
-            return _printUserModes("", sender_fd);
+    // Handle user modes only
+    if (request.args.size() == 1 && request.args[0] == nick)
+        return _printUserModes("", sender_fd);
 
-        if (request.args.size() < 2)
-            return _printMessage("461", nick, "MODE :Not enough parameters");
+    if (request.args.size() < 2)
+        return _printMessage("461", nick, "MODE :Not enough parameters");
 
-        if (request.args[0] != nick)
-            return _printMessage("502", nick, ":Cannot change modes for other users");
+    if (request.args[0] != nick)
+        return _printMessage("502", nick, ":Cannot change modes for other users");
 
-        if (!_validMode(request))
-            return _printMessage("501", nick, ":Unknown mode flag");
+    if (!_validMode(request))
+        return _printMessage("501", nick, ":Unknown mode flag");
 
-        char flag = request.args[1][1];
-        bool add  = (request.args[1][0] == '+');
-        this->_clients[sender_fd]->setMode(add, flag);
+    char flag = request.args[1][1];
+    bool add  = (request.args[1][0] == '+');
+    this->_clients[sender_fd]->setMode(add, flag);
 
-        return _printMessage("221", nick, request.args[1]);
-    }
+    return _printMessage("221", nick, request.args[1]);
 }
 
 std::string Server::_setOper(Request request, int sender_fd)
