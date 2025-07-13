@@ -170,4 +170,12 @@ bool Channel::hasUser(int fd)
   return it != _members.end();
 }
 
+bool Channel::isBanned(const std::string& nickname) const
+{
+  return std::find(_bannedUsers.begin(), _bannedUsers.end(), nickname) != _bannedUsers.end();
+}
 
+bool Channel::isOperator(int fd) const
+{
+  return _operators.find(fd) != _operators.end();
+}

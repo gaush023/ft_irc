@@ -1,9 +1,12 @@
 #pragma once
 
-#include "../../../ICommand.hpp"
+#include "../../include/ICommand.hpp"
 
 class NickCommand : public ICommand
 {
   public:
-    std::string execute(Request &request, int sender_fd) = 0;
+    NickCommand(Server &server);
+    std::string execute(Request &request, int sender_fd);
+  private:
+    Server &_server;
 };

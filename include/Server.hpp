@@ -100,5 +100,18 @@ class Server
     std::string getServerInfo() const;
     std::string getChannelInfo(const std::string& channelName, int sender_fd) const;
     std::string listAllChannels() const;
+    std::string _printMessage(const std::string& code, const std::string& target, const std::string& text) const;
+    bool  channelExists(const std::string& name) const;
+    Channel* getChannel(const std::string& name) const;
+    void registerChannel(const std::string& name, Channel* ch);
+    void broadcastToChannel(Channel* ch, const std::string& line) const;
+
+  public:
+    bool  nickExists(const std::string& nick) const;
+    void  registerNick(const std::string& nick);
+    void  unregisterNick(const std::string& oldNick);
+    void  sendRaw(const std::string& msg);
+    void  destroyChannel(const std::string& name);
 };
+
 

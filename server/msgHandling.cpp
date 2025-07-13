@@ -35,3 +35,44 @@ int Server::_sendall(int destfd, const std::string& message)
     }
     return 0;
 }
+
+std::string Server::_printMessage(const std::string& code, const std::string& target, const std::string& text) const
+{
+    std::ostringstream oss;
+
+    oss << ":" << this->_name
+        << " "  << code
+        << " "  << target
+        << " "  << text
+        << "\r\n";
+    return oss.str();
+}
+
+void Server::broadcastToChannel(Channel* ch, const std::string& line) const
+{
+    std::map<int,Client*> all = ch->getAllUsers();
+    for (std::map<int,Client*>::iterator it = all.begin(); it!=all.end(); ++it)
+        it->second->sendRaw(line);
+}
+
+void Server::sendRaw(const std::string& msg)
+{
+    const char* data = msg.c_str();
+    size_t     total = 0;
+    size_t     len   = msg.size();
+
+    while (total < len) {
+        ssize_t sent = send(_clientfd, data + total, len - total, 0);
+        if (sent < 0) {
+            if (errno == EINTR) 
+                continue;   
+            std::cerr << "sendRaw() failed: " << strerror(errno) << "\n";
+            break;
+        }
+        if (sent == 0) {
+            break;
+        }
+        total += sent;
+    }
+}
+

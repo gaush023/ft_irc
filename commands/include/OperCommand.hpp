@@ -1,9 +1,12 @@
 #pragma once
 
-#include "../../../ICommand.hpp"
+#include "../../include/ICommand.hpp"
 
 class OperCommand : public ICommand
 {
   public:
-    std::string execute(Request &request, int sender_fd) = 0;
+    OperCommand(Server &server);
+    virtual std::string execute(Request &request, int sender_fd);
+  private:
+    Server &_server;
 };

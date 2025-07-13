@@ -1,9 +1,12 @@
 #pragma once
 
-#include "../../../ICommand.hpp"
+#include "../../include/ICommand.hpp"
 
 class PassCommand : public ICommand
 {
   public:
-    std::string execute(Request &request, int sender_fd) = 0;
+    std::string execute(Request &request, int sender_fd);
+    PassCommand(Server& server, const std::string& password);
+  private:
+    Server &_server;
 };

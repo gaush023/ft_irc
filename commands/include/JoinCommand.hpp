@@ -1,12 +1,18 @@
 #pragma once
 
-#include "../../../ICommand.hpp"
+#include "../../include/ICommand.hpp"
 
-class JoinCommand : public ICommand
-{
-  public:
-    std::string execute(Request &request, int sender_fd) = 0;
-    int _createChannel( std::string ChannelName, int CreatorFd)
-    int _createPrvChannel( std::string ChannelName, std::string Key, int CreatorFd)
-    std::vector<std::string> _commaSEparator(std::string arg);
+class JoinCommand : public ICommand {
+public:
+    JoinCommand(Server& server);
+
+    std::string execute(Request& request, int sender_fd);
+
+private:
+    std::vector<std::string> _commaSeparator(const std::string& s) const;
+
+    int _createChannel(const std::string& channelName, int creatorFd);
+    int _createPrvChannel(const std::string& channelName, const std::string& key, int creatorFd);
+
+    Server& _server;  
 };

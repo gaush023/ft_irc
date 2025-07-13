@@ -101,6 +101,9 @@ class Channel
     bool isUserLimitEnabled() const;
     int getUserLimit() const;
     bool hasUser(int fd);
-
+    
+    Channel* createChannel(const std::string& name, Client* creator);
+    bool isBanned(const std::string& nickname) const;
+    bool isOperator(int fd) const;
 };
 

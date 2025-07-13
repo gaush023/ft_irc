@@ -144,3 +144,23 @@ std::map<std::string, Channel *> Client::getJoinedChannels() const
   return this->_joinedChannels;
 }
 
+void Client::sendRaw(const std::string& msg)
+{
+    const char* data = msg.c_str();
+    size_t     total = 0;
+    size_t     len   = msg.size();
+
+    while (total < len) {
+        ssize_t sent = send(_clientfd, data + total, len - total, 0);
+        if (sent < 0) {
+            if (errno == EINTR) 
+                continue;   
+            std::cerr << "sendRaw() failed: " << strerror(errno) << "\n";
+            break;
+        }
+        if (sent == 0) {
+            break;
+        }
+        total += sent;
+    }
+}

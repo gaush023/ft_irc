@@ -1,15 +1,21 @@
-#include "./include/OperCommand.hpp"
+#include "include/OperCommand.hpp"
 
-std::string OperCommand::execute(Request request, int sender_fd)
+OperCommand::OperCommand(Server& server) : _server(server) {}
+
+std::string OperCommand::execute(Request& req, int fd)
 {
-  if(!this->_clients[sender_fd]->getAuth())
-    return _printMessage("451", this->_clients[sender_fd]->getNickName(), ":You have not registered");
-  if (request.args.size() < 2)
-    return _printMessage("461", this->_clients[sender_fd]->getNickName(), "PASS :Not enough parameters");
-  if (request.args[0] != "ADMIN")
-    return _printMessage("461", this->_clients[sender_fd]->getNickName(), ":Username or password incorrect");
-  if (request.args[1] != "DEEZNUTS")
-    return _printMessage("464", this->_clients[sender_fd]->getNickName(), ":Username or password incorrect");
-  this->_clients[sender_fd]->setIsOperator(true);
-  return _printMessage("381", this->_clients[sender_fd]->getNickName(), ":You are now an operator");
+    Client* cli = _server.getClientByFd(fd);
+    const std::string& nick = cli->getNickName();
+
+    if (!cli->getAuth())
+        return _server._printMessage("451", nick, ":You have not registered");
+
+    if (req.args.size() < 2)
+        return _server._printMessage("461", nick, "OPER :Not enough parameters");
+
+    if (req.args[0] != "ADMIN" || req.args[1] != "DEEZNUTS")
+        return _server._printMessage("464", nick, ":Username or password incorrect");
+
+    cli->setIsOperator(true);
+    return _server._printMessage("381", nick, ":You are now an operator");
 }

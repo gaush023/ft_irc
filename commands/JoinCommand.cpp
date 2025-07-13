@@ -1,118 +1,81 @@
 #include "./include/JoinCommand.hpp"
 
-std::string JoinCommand::execute(Request request, int fd)
-{ 
-  int status = 1;
-  if (!this->_clients[fd]->getRegistered())
-    return (_printMessage("451", this->_clients[fd]->getNickName(), ":You have not registered"));
-  if (request.args.size() == 0)
-    return (_printMessage("461", this->_clients[fd]->getNickName(), ":Not enough parameters"));
-  if (request.args[0] == "0")
-    return (this->_clients[fd]->leaveAllChannels());
-  std::vector<std::string> parsChannels(_commaSeparator(request.args[0]));
-  std::vector<std::string> parsKeys;
-  if (request.args.size() == 2)
-    parsKeys = _commaSeparator(request.args[1]);
-  std::vector<std::string>::iterator itChannels = parsChannels.begin();
-  std::vector<std::string>::iterator itKeys = parsKeys.begin();
-  while ( itChannels != parsChannels.end() && status == 1)
-  {
-    if (itKeys != parsKeys.end())
-      status = _createPrvChannel(*itChannels, *itKeys, fd);
-    else
-      status = _createChannel(*itChannels, fd);
-    itChannels++;
-  }
-  --itChannels;
-  return ("");
-}; 
+JoinCommand::JoinCommand(Server& server) : _server(server) {}
 
-int JoinCommand::_createChannel(std::string ChannelName, int CreatorFd)
+std::vector<std::string>
+JoinCommand::_commaSeparator(const std::string& s) const
 {
-  std::map<std::string, Channel *>::iterator it = this->_allChannels.find(ChannelName);
-  if ( it == this->_allChannels.end())
-  {
-    if (ChannelName[0] != '&' && ChannelName[0] != '#' && ChannelName[0] != '+' && ChannelName[0] != '!')
-      return (BADCHANMASK);
-    Channel *channel = new Channel(ChannelName, this->_clients[CreatorFd]);
-    this->_allChannels.insert(std::pair<std::string, Channel *>(ChannelName, channel));
-    this->_clients[CreatorFd]->joinChannel(ChannelName, channel);
-    _sendall(CreatorFd, this->_clients[CreatorFd]->getUserPerfix() + "JOIN " + ChannelName + "\n");
-  }
-  else {
-      if (it->second->getKey().empty())
-      {
-        int status = 0;
-        if (this->_clients[CreatorFd]->getisOperator() == true)
-          status = it->second->addOperator(this->_clients[CreatorFd]);
-        else
-          status = it->second->addUser(this->_clients[CreatorFd]);
-        if (status == USERJOINED)
-          this->_clients[CreatorFd]->joinChannel(it->first, it->second);
-        else if (status == USERALREADYJOINED)
-          return (USERALREADYJOINED);
-        else if (status == BANNEDFROMCHAN)
-          return (BANNEDFROMCHAN);
-        _sendall(CreatorFd, this->_clients[CreatorFd]->getUserPerfix() + "JOIN " + ChannelName + "\n");
-        _sendall(CreatorFd, _printMessage("332", this->_clients[CreatorFd]->getNickName(), ChannelName + " :" + it->second->getTopic()));
-        _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " = " + ChannelName, it->second->listUsers()));
-        _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " " + ChannelName, ":End of NAMES list"));
-        std::string reply = "JOIN " + ChannelName + "\n";
-        _sendToAllUsers(it->second, CreatorFd, reply);
-        return (USERJOINED);
-      }
-    }
-    return (USERJOINED);
+    std::vector<std::string> out;
+    std::string tmp;
+    std::istringstream iss(s);
+    while (std::getline(iss, tmp, ',')) out.push_back(tmp);
+    return out;
 }
 
-int JoinCommand::_createPrvChannel(std::string ChannelName, std::string ChannelKey, int CreatorFd)
+int JoinCommand::_createChannel(const std::string& name, int fd)
 {
-  std::map<std::string, Channel *>::iterator it = this->_allChannels.find(ChannelName);
-  if ( it == this->_allChannels.end())
-  {
-    if (ChannelName[0] != '&' && ChannelName[0] != '#' && ChannelName[0] != '+' && ChannelName[0] != '!')
-      return (BADCHANMASK);
-    Channel *channel = new Channel(ChannelName, ChannelKey, this->_clients[CreatorFd]);
-    this->_allChannels.insert(std::pair<std::string, Channel *>(ChannelName, channel));
-    this->_clients[CreatorFd]->joinChannel(ChannelName, channel);
-  }
-  else {
-      if (it->second->getKey() == ChannelKey)
-      {
-        int status = 0;
-        if (this->_clients[CreatorFd]->getisOperator() == true)
-          status = it->second->addOperator(this->_clients[CreatorFd]);
-        else
-          status = it->second->addUser(this->_clients[CreatorFd]);
-        if (status == USERJOINED)
-          this->_clients[CreatorFd]->joinChannel(it->first, it->second);
-        else if (status == USERALREADYJOINED)
-          return (USERALREADYJOINED);
-        else if (status == BANNEDFROMCHAN)
-          return (BANNEDFROMCHAN);
-        _sendall(CreatorFd, this->_clients[CreatorFd]->getUserPerfix() + "JOIN " + ChannelName + "\n");
-        _sendall(CreatorFd, _printMessage("332", this->_clients[CreatorFd]->getNickName(), ChannelName + " :" + it->second->getTopic()));
-        _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " = " + ChannelName, it->second->listUsers()));
-        _sendall(CreatorFd, _printMessage("353", this->_clients[CreatorFd]->getNickName() + " " + ChannelName, ":End of NAMES list"));
-        _sendToAllUsers(it->second, CreatorFd, "JOIN " + ChannelName + "\n");
-        return (USERJOINED);
-      }
-      else {
-        return (BADCHANNELKEY);
-      }
-    }
-    return (USERJOINED);
-  };
+    if (_server.channelExists(name))
+        return 0;                       
 
-std::vector<std::string> JoinCommand::_commaSeparator(std::string arg)
+    if (name.empty() || std::string("#&+!").find(name[0]) == std::string::npos)
+        return BADCHANMASK;             
+
+    Channel* ch = new Channel(name, _server.getClientByFd(fd));
+    _server.registerChannel(name, ch);  
+    _server.getClientByFd(fd)->joinChannel(name, ch);
+
+    _server.getClientByFd(fd)->sendRaw(
+        _server.getClientByFd(fd)->getUserPerfix() + "JOIN " + name + "\r\n");
+
+    return USERJOINED;
+}
+
+int JoinCommand::_createPrvChannel(const std::string& name,
+                                   const std::string& key,
+                                   int fd)
 {
-  std::vector<std::string> ret;
-  size_t pos = 0;
-  while ((pos = arg.find(",")) != std::string::npos)
-  {
-    ret.push_back(arg.substr(0, pos));
-    arg.erase(0, pos+ 1);
-  }
-  ret.push_back(arg.substr(0, pos));
-  return ret;
+    if (_server.channelExists(name))
+        return BADCHANNELKEY;           
+    if (name.empty() || std::string("#&+!").find(name[0]) == std::string::npos)
+        return BADCHANMASK;
+
+    Channel* ch = new Channel(name, key, _server.getClientByFd(fd));
+    _server.registerChannel(name, ch);
+    _server.getClientByFd(fd)->joinChannel(name, ch);
+
+    _server.getClientByFd(fd)->sendRaw(
+        _server.getClientByFd(fd)->getUserPerfix() + "JOIN " + name + "\r\n");
+
+    return USERJOINED;
+}
+
+std::string JoinCommand::execute(Request& request, int fd)
+{
+    Client* cli = _server.getClientByFd(fd);
+    std::string nick = cli->getNickName();
+
+    if (!cli->getRegistered())
+        return _server._printMessage("451", nick, ":You have not registered");
+
+    if (request.args.empty())
+        return _server._printMessage("461", nick, ":Not enough parameters");
+
+    if (request.args[0] == "0")
+        return cli->leaveAllChannels();         
+
+    std::vector<std::string> chans = _commaSeparator(request.args[0]);
+    std::vector<std::string> keys;
+    if (request.args.size() > 1)
+        keys = _commaSeparator(request.args[1]);
+
+    std::vector<std::string>::iterator itC = chans.begin();
+    std::vector<std::string>::iterator itK = keys.begin();
+
+    for (; itC != chans.end(); ++itC) {
+        if (itK != keys.end())
+            _createPrvChannel(*itC, *itK++, fd);
+        else
+            _createChannel(*itC, fd);
+    }
+    return "";
 }

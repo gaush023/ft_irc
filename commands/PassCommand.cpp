@@ -1,16 +1,22 @@
-#include "./include/PassCommand.hpp"
+#include "include/PassCommand.hpp"
 
-std::string PassCommand::execute(Request request, int sender_fd)
+PassCommand::PassCommand(Server& server, const std::string& password)
+    : _server(server), _password(password) {}
+
+std::string PassCommand::execute(Request& req, int fd)
 {
-  if (request.args.size() < 1)
-    return _printMessage("461", this->_clients[sender_fd]->getNickName(), ":Not enough parameters");
-  if(this->_clients[sender_fd]->getRegistered())
-    return _printMessage("462", this->_clients[sender_fd]->getNickName(), ":Unauthorized command (already registered)");
-  if(request.args[0] != this->_password)
-    return _printMessage("464", this->_clients[sender_fd]->getNickName(), ":Password incorrect");
-  else {
-      this->_clients[sender_fd]->setAuth(true);
-  }
-  return ("");
-}
+    Client* cli = _server.getClientByFd(fd);
+    const std::string& nick = cli->getNickName();
 
+    if (req.args.empty())
+        return _server._printMessage("461", nick,
+                                    "PASS :Not enough parameters");
+   if (cli->getRegistered())
+        return _server._printMessage("462", nick,
+                                    ":Unauthorized command (already registered)");
+    if (req.args[0] != _password)
+        return _server._printMessage("464", nick, ":Password incorrect");
+
+    cli->setAuth(true);
+    return "";                               
+}

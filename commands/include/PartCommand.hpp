@@ -1,10 +1,14 @@
 #pragma once
 
-#include "../../../ICommand.hpp"
+#include "../../include/ICommand.hpp"
 
 class PartCommand : public ICommand
 {
   public:
-    std::string execute(Request &request, int sender_fd) = 0;
-    int _partChannel(std::string ChannelName, int i, std::string message, int isPart);
+    PartCommand(Server &server);
+    virtual std::string execute(Request &request, int sender_fd);
+
+  private:
+    int _partChannel(const std::string& channelName, int arget_fd, const std::string& message, int isPart);
+    Server &_server;
 };

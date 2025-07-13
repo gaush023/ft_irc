@@ -1,55 +1,72 @@
-#include "./include/PartCommand.hpp"
+#include "include/PartCommand.hpp"
 
-int PartCommand::_partChannel(std::string ChannelName, int i, std::string message, int isPart)
+PartCommand::PartCommand(Server& server) : _server(server) {}
+
+static std::vector<std::string> splitComma(const std::string& s)
 {
-  std::map<std::string, Channel *>::iterator itCh = this->_allChannels.find(ChannelName);
-  if (itCh == this->_allChannels.end())
-    return (NOSUCHCHANNEL);
-  else {
-    std::pair<Client *, int> user(itCh->second->findUserRole(i));
-    if (user.second == -1)
-      return (NOTINCHANNEL);
-    else {
-      if (user.second == 0)
-        itCh->second->removeUser(i);
-      else if (user.second == 1)
-        itCh->second->removeOperator(i);
-      else
-        itCh->second->removeVoice(i);
-      user.first->leaveChannel(itCh->second->getName());
-      if (isPart == 1) {
-        std::string reply = "PART " + ChannelName;
-        if (message.empty())
-          reply.append("\n");
-        else
-          reply.append(" " + message + "\n");
-        _sendToAllUsers(itCh->second, i, reply);
-      }
+    std::vector<std::string> out;
+    size_t pos = 0, start = 0;
+    while ((pos = s.find(',', start)) != std::string::npos) {
+        out.push_back(s.substr(start, pos - start));
+        start = pos + 1;
     }
-  }
-  return (0);
+    out.push_back(s.substr(start));
+    return out;
 }
 
-std::string PartCommand::execute(Request request, int fd)
+std::string PartCommand::execute(Request& req, int fd)
 {
-  if (!this->_clients[fd]->getRegistered())
-    return _printMessage("451", this->_clients[fd]->getNickName(), ":You have not registered");
-  if (request.args.size() == 0)
-    return _printMessage("461", this->_clients[fd]->getNickName(), ":Not enough parameters");
-  std::vector<std::string> parsChannels(_commaSeparator(request.args[0]));
-  std::vector<std::string>::iterator it = parsChannels.begin();
-  while (it != parsChannels.end())
-  {
-    int status = 0;
-    if (request.args.size() == 2)
-      status = _partChannel(*it, fd, request.args[1], 1);
-    else
-      status = _partChannel(*it, fd, "", 1);
-    if (status == NOSUCHCHANNEL) 
-      return _printMessage("403", this->_clients[fd]->getNickName(), *it + " :No such channel");
-    if (status == NOTINCHANNEL)
-      return _printMessage("442", this->_clients[fd]->getNickName(), *it + " :You're not on that channel");
-    it++;
-  }
-  return ("");
-};
+    Client* cli = _server.getClientByFd(fd);
+    const std::string& nick = cli->getNickName();
+
+    if (!cli->getRegistered())
+        return _server._printMessage("451", nick, ":You have not registered");
+
+    if (req.args.empty())
+        return _server._printMessage("461", nick, "PART :Not enough parameters");
+
+    std::vector<std::string> channels = splitComma(req.args[0]);
+    const std::string msg = (req.args.size() > 1) ? req.args[1] : "";
+
+    for (size_t i = 0; i < channels.size(); ++i) {
+        int ret = _partChannel(channels[i], fd, msg, 1);
+        if (ret != 0)   
+            return ret == -1 ? "" : _server._printMessage("403", nick,
+                                                         channels[i] + " :No such channel");
+    }
+    return "";  
+}
+
+int PartCommand::_partChannel(const std::string& chanName,
+                              int                target_fd,
+                              const std::string& msg,
+                              int                isPart)
+{
+    Channel* ch = _server.getChannel(chanName);
+    Client*  who = _server.getClientByFd(target_fd);
+    if (!ch) return -1;
+
+    if (!ch->hasUser(target_fd)) {
+        if (isPart)
+        { 
+          Client* target = _server.getClientByFd(target_fd);
+          target->sendRaw(
+              _server._printMessage("442", target->getNickName(),
+                                    chanName + " :You're not on that channel"));
+          return 0;
+        }
+    }
+
+    std::string line = who->getUserPerfix() +
+                       "PART " + chanName +
+                       (msg.empty() ? "" : " :"+msg) + "\r\n";
+    _server.broadcastToChannel(ch, line);
+
+    ch->removeUser(target_fd);
+    who->leaveChannel(chanName);
+
+    if (ch->getOnlineUsers() == 0)
+        _server.destroyChannel(chanName);
+
+    return 0;
+}

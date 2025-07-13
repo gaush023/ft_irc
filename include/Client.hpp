@@ -66,5 +66,7 @@ class Client
   public:
     int isjoined(std::string ChannelName) const;
     std::string JoinedChannels() const;
+    void sendRaw(const std::string& msg);
+
 };
     

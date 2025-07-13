@@ -30,3 +30,20 @@ std::string Server::_printHelpInfo()
   helpInfo.append("\tUse USER command to set a username. e.g: USER [Username] 0 * :[Full Name]\n\n");
   return (helpInfo);
 }
+
+bool Server::nickExists(const std::string& nick) const
+{
+    return _nickRegistry.find(nick) != _nickRegistry.end();
+}
+
+void Server::registerNick(const std::string& nick)
+{
+    _nickRegistry.insert(nick);
+}
+
+void Server::unregisterNick(const std::string& nick)
+{
+    std::set<std::string>::iterator it = _nickRegistry.find(nick);
+    if (it != _nickRegistry.end())
+        _nickRegistry.erase(it);
+}

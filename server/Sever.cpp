@@ -104,7 +104,7 @@ void Server::_newClient(void)
 
 void Server::startServer(void)
 {
-  const int TIMEOUT = 1000;
+  const int TIMEOUT = 0;
   while(true)
   {
     int pollCount = poll(this->_pfds, this->_online_c, TIMEOUT);
@@ -243,4 +243,30 @@ std::string Server::listAllChannels() const {
     }
     oss << RESET;
     return oss.str();
+}
+
+bool Server::channelExists(const std::string& name) const
+{
+    return _channels.find(name) != _channels.end();
+}
+
+Channel* Server::getChannel(const std::string& name) const
+{
+    std::map<std::string, Channel*>::const_iterator it = _channels.find(name);
+    if (it == _channels.end())
+        return NULL;          
+    return it->second;       
+}
+
+void Server::registerChannel(const std::string& name, Channel* ch) {
+    _channels[name] = ch;
+}
+
+void Server::destroyChannel(const std::string& name)
+{
+    std::map<std::string, Channel*>::iterator it = _allChannels.find(name);
+    if (it != _allChannels.end()) {
+        delete it->second;
+        _allChannels.erase(it);
+    }
 }
