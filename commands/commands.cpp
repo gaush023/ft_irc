@@ -137,6 +137,14 @@ std::string Server::_setNickName(Request request, int sender_fd)
   if (std::find(this->_clientNicknames.begin(), this->_clientNicknames.end(), request.args[0]) != this->_clientNicknames.end())
     return _printMessage("433", this->_clients[sender_fd]->getNickName(), request.args[0] + " :Nickname is already in use");
   
+  // Remove old nickname if it exists
+  std::string oldNick = this->_clients[sender_fd]->getNickName();
+  if (!oldNick.empty()) {
+    std::vector<std::string>::iterator it = std::find(this->_clientNicknames.begin(), this->_clientNicknames.end(), oldNick);
+    if (it != this->_clientNicknames.end())
+      this->_clientNicknames.erase(it);
+  }
+  
   this->_clients[sender_fd]->setNickName(request.args[0]);
   this->_clientNicknames.push_back(this->_clients[sender_fd]->getNickName());
   if(this->_clients[sender_fd]->getUserName() != "")
@@ -250,6 +258,15 @@ std::string Server::_quit(Request request, int sender_fd)
         it++;
     }
     this->_clients[sender_fd]->leaveAllChannels();
+    
+    // Remove nickname from the list
+    std::string nickName = this->_clients[sender_fd]->getNickName();
+    if (!nickName.empty()) {
+        std::vector<std::string>::iterator it = std::find(this->_clientNicknames.begin(), this->_clientNicknames.end(), nickName);
+        if (it != this->_clientNicknames.end())
+            this->_clientNicknames.erase(it);
+    }
+    
     close(this->_clients[sender_fd]->getClientfd());
     return ("QUIT");
 };

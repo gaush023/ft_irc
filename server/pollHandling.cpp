@@ -29,6 +29,13 @@ void Server::_removeFromPoll(int i)
 
     std::map<int, Client*>::iterator it = this->_clients.find(fd);
     if (it != this->_clients.end()) {
+        // Remove nickname from the list
+        std::string nickName = it->second->getNickName();
+        if (!nickName.empty()) {
+            std::vector<std::string>::iterator nick_it = std::find(this->_clientNicknames.begin(), this->_clientNicknames.end(), nickName);
+            if (nick_it != this->_clientNicknames.end())
+                this->_clientNicknames.erase(nick_it);
+        }
         delete it->second;
         this->_clients.erase(it);
     }
