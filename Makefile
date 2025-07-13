@@ -1,7 +1,4 @@
 NAME = ircserv
-:q:q
-:q
-:wq
 
 
 

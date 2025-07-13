@@ -30,6 +30,10 @@ class Channel
     std::vector<std::string> _bannedUsers;
     std::map<int, Client *> _operators;
     std::map<int, Client *> _voices;
+    std::vector<std::string> _invitedUsers;
+    bool _inviteOnly;
+    bool _topicRestricted;
+    int _userLimit;
 
   public:
     Channel();
@@ -50,7 +54,11 @@ class Channel
     std::map<int, Client *> const &getMembers() const;
     std::map<int, Client *> const &getOperators() const;
     std::map<int, Client *> const &getVoice() const;
-    std::map<std::string, Client *> const &getBannedUsers() const;
+    std::vector<std::string> const &getBannedUsers() const;
+    std::vector<std::string> const &getInvitedUsers() const;
+    bool getInviteOnly() const;
+    bool getTopicRestricted() const;
+    int getUserLimit() const;
   
     Client *getCreator() const;
     std::map<int, Client *> getAllUsers() const;
@@ -73,5 +81,10 @@ class Channel
     void setName(std::string name);
     void setKey(std::string key);
     void setTopic(std::string topic);
+    void setInviteOnly(bool inviteOnly);
+    void setTopicRestricted(bool topicRestricted);
+    void setUserLimit(int userLimit);
+    void addInvitedUser(std::string nickname);
+    void removeInvitedUser(std::string nickname);
 };
 

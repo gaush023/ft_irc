@@ -16,7 +16,12 @@ std::string Server::_parsing(std::string message, int sender_fd)
   else if (request.command == "OPER")
     return (_setOper(request, sender_fd));
   else if (request.command == "MODE")
-    return (_setMode(request, sender_fd));
+  {
+    if (request.args.size() > 0 && (request.args[0][0] == '#' || request.args[0][0] == '&'))
+      return (_channelMode(request, sender_fd));
+    else
+      return (_setMode(request, sender_fd));
+  }
   else if (request.command == "PRIVMSG")
     return (_privmsg(request, sender_fd));
   else if (request.command == "NOTICE")
@@ -29,6 +34,8 @@ std::string Server::_parsing(std::string message, int sender_fd)
     return (_topic(request, sender_fd));
   else if (request.command == "KICK")
     return (_kick(request, sender_fd));
+  else if (request.command == "INVITE")
+    return (_invite(request, sender_fd));
   else if (request.command == "PART")
     return (_part(request, sender_fd));
   else if (request.command == "QUIT")
@@ -85,7 +92,7 @@ std::string Server::_topic(Request request, int fd)
   if (it != this->_allChannels.end())
   {
     std::pair<Client *, int> user = it->second->findUserRole(fd);
-    if (user.second == 1)
+    if (user.second == 1 || (user.second != -1 && !it->second->getTopicRestricted()))
     {
       it->second->setTopic(request.args[1]);
       std::string reply = "TOPIC " + it->second->getName() + " :" + request.args[1] + "\n";
@@ -292,4 +299,126 @@ std::string Server::_printHelpInfo()
   helpInfo.append(RESET);
   helpInfo.append("\tUse USER command to set a username. e.g: USER [Username] 0 * :[Full Name]\n\n");
   return (helpInfo);
+}
+
+std::string Server::_invite(Request request, int sender_fd)
+{
+  if (!this->_clients[sender_fd]->getRegistered())
+    return _printMessage("451", this->_clients[sender_fd]->getNickName(), ":You have not registered");
+  if (request.args.size() < 2)
+    return _printMessage("461", this->_clients[sender_fd]->getNickName(), ":Not enough parameters");
+  
+  std::string targetNick = request.args[0];
+  std::string channelName = request.args[1];
+  
+  int targetFd = _findFdByNickName(targetNick);
+  if (targetFd == USERNOTFOUND)
+    return _printMessage("401", this->_clients[sender_fd]->getNickName(), targetNick + " :No such nick/channel");
+  
+  std::map<std::string, Channel *>::iterator it = this->_allChannels.find(channelName);
+  if (it == this->_allChannels.end())
+    return _printMessage("403", this->_clients[sender_fd]->getNickName(), channelName + " :No such channel");
+  
+  std::pair<Client *, int> user = it->second->findUserRole(sender_fd);
+  if (user.second == -1)
+    return _printMessage("442", this->_clients[sender_fd]->getNickName(), channelName + " :You're not on that channel");
+  if (user.second != 1)
+    return _printMessage("482", this->_clients[sender_fd]->getNickName(), channelName + " :You're not channel operator");
+  
+  std::pair<Client *, int> targetUser = it->second->findUserRole(targetFd);
+  if (targetUser.second != -1)
+    return _printMessage("443", this->_clients[sender_fd]->getNickName(), targetNick + " " + channelName + " :is already on channel");
+  
+  it->second->addInvitedUser(targetNick);
+  _sendall(targetFd, this->_clients[sender_fd]->getUserPerfix() + "INVITE " + targetNick + " " + channelName + "\n");
+  return _printMessage("341", this->_clients[sender_fd]->getNickName(), targetNick + " " + channelName);
+}
+
+std::string Server::_channelMode(Request request, int sender_fd)
+{
+  if (!this->_clients[sender_fd]->getRegistered())
+    return _printMessage("451", this->_clients[sender_fd]->getNickName(), ":You have not registered");
+  if (request.args.size() < 1)
+    return _printMessage("461", this->_clients[sender_fd]->getNickName(), ":Not enough parameters");
+  
+  std::string channelName = request.args[0];
+  std::map<std::string, Channel *>::iterator it = this->_allChannels.find(channelName);
+  if (it == this->_allChannels.end())
+    return _printMessage("403", this->_clients[sender_fd]->getNickName(), channelName + " :No such channel");
+  
+  std::pair<Client *, int> user = it->second->findUserRole(sender_fd);
+  if (user.second == -1)
+    return _printMessage("442", this->_clients[sender_fd]->getNickName(), channelName + " :You're not on that channel");
+  
+  if (request.args.size() == 1)
+  {
+    std::string modes = "+";
+    if (it->second->getInviteOnly()) modes += "i";
+    if (it->second->getTopicRestricted()) modes += "t";
+    if (it->second->getUserLimit() > 0) modes += "l";
+    if (!it->second->getKey().empty()) modes += "k";
+    return _printMessage("324", this->_clients[sender_fd]->getNickName(), channelName + " " + modes);
+  }
+  
+  if (user.second != 1)
+    return _printMessage("482", this->_clients[sender_fd]->getNickName(), channelName + " :You're not channel operator");
+  
+  std::string modeString = request.args[1];
+  bool adding = true;
+  int argIndex = 2;
+  
+  for (size_t i = 0; i < modeString.length(); i++)
+  {
+    char mode = modeString[i];
+    if (mode == '+')
+      adding = true;
+    else if (mode == '-')
+      adding = false;
+    else if (mode == 'i')
+      it->second->setInviteOnly(adding);
+    else if (mode == 't')
+      it->second->setTopicRestricted(adding);
+    else if (mode == 'l')
+    {
+      if (adding && argIndex < (int)request.args.size())
+        it->second->setUserLimit(atoi(request.args[argIndex++].c_str()));
+      else if (!adding)
+        it->second->setUserLimit(0);
+    }
+    else if (mode == 'k')
+    {
+      if (adding && argIndex < (int)request.args.size())
+        it->second->setKey(request.args[argIndex++]);
+      else if (!adding)
+        it->second->setKey("");
+    }
+    else if (mode == 'o')
+    {
+      if (argIndex < (int)request.args.size())
+      {
+        int targetFd = _findFdByNickName(request.args[argIndex++]);
+        if (targetFd != USERNOTFOUND)
+        {
+          std::pair<Client *, int> targetUser = it->second->findUserRole(targetFd);
+          if (targetUser.second == 0)
+          {
+            if (adding)
+            {
+              it->second->removeUser(targetFd);
+              it->second->addOperator(this->_clients[targetFd]);
+            }
+          }
+          else if (targetUser.second == 1 && !adding)
+          {
+            it->second->removeOperator(targetFd);
+            it->second->addUser(this->_clients[targetFd]);
+          }
+        }
+      }
+    }
+  }
+  
+  std::string reply = "MODE " + channelName + " " + modeString + "\n";
+  _sendToAllUsers(it->second, sender_fd, reply);
+  return "";
 }
