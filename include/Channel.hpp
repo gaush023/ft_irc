@@ -17,6 +17,24 @@
 #define USERALREADYBANNED -1
 #define USERISALREADYJOINED -1
 
+struct ChannelModes
+{
+  bool inviteOnly;
+  bool topicOpsOnly;
+  bool moderated;
+  bool keyProtected;
+  bool userLimitEnabled;
+  int userLimit;
+  ChannelModes()
+    : inviteOnly(false)
+    ,topicOpsOnly(false)
+    , moderated(false)
+    , keyProtected(false)
+    , userLimitEnabled(false)
+    , userLimit(0) 
+    {}
+};
+
 class Channel
 {
   private:
@@ -30,6 +48,7 @@ class Channel
     std::vector<std::string> _bannedUsers;
     std::map<int, Client *> _operators;
     std::map<int, Client *> _voices;
+    ChannelModes _modes;
 
   public:
     Channel();
@@ -73,5 +92,13 @@ class Channel
     void setName(std::string name);
     void setKey(std::string key);
     void setTopic(std::string topic);
+
+  public 
+    bool isInviteOnly() const;
+    bool isTopicOpsOnly() const;
+    bool isModerated() const;
+    bool isKeyProtected() const;
+    bool isUserLimitEnabled() const;
+    int getUserLimit() const;
 };
 

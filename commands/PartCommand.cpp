@@ -1,6 +1,6 @@
-#include "../headers/Server.hpp"
+#include "./include/PartCommand.hpp"
 
-int Server::_partChannel(std::string ChannelName, int i, std::string message, int isPart)
+int PartCommand::_partChannel(std::string ChannelName, int i, std::string message, int isPart)
 {
   std::map<std::string, Channel *>::iterator itCh = this->_allChannels.find(ChannelName);
   if (itCh == this->_allChannels.end())
@@ -30,7 +30,7 @@ int Server::_partChannel(std::string ChannelName, int i, std::string message, in
   return (0);
 }
 
-std::string Server::_part( Request request, int fd)
+std::string PartCommand::execute(Request request, int fd)
 {
   if (!this->_clients[fd]->getRegistered())
     return _printMessage("451", this->_clients[fd]->getNickName(), ":You have not registered");

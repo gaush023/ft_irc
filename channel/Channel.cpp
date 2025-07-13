@@ -156,3 +156,10 @@ std::string Channel::listUsers() const
   }
   return AllUsers;
 };
+
+bool Channel::isInviteOnly() const { return _modes.inviteOnly; }
+bool Channel::isTopicOpsOnly() const { return _modes.topicOpsOnly; }
+bool Channel::isModerated() const { return _modes.moderated; }
+bool Channel::isKeyProtected() const { return _modes.keyProtected; }
+bool Channel::isUserLimitEnabled() const { return _modes.userLimitEnabled; }
+int Channel::getUserLimit() const { return _modes.userLimit; }

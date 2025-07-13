@@ -59,22 +59,22 @@ class Server
 		void _ClientRequest(int i);
     int _sendall(int destfd, std::string message);
     void _broadcastmsg(int sender_fd, std::string buf, int nbytes);
-    std::string _setUserName(Request request, int sender_fd);
-    std::string _setNickName(Request request, int sender_fd);
-    std::string _setFullName(Request request, int sender_fd);
-    std::string _setPassword(Request request, int sender_fd);
-    std::string _setOper(Request request, int sender_fd);
-    std::string _setMode(Request &request, int sender_fd);
-    std::string _joinChannel(Request request, int sender_fd);
-    bool _validMode(Request request);
-    std::string _quit(Request request, int sender_fd);
-    std::string _part(Request request, int sender_fd);
-    std::string _topic(Request request, int sender_fd);
-    std::string _kick(Request request, int sender_fd);
-    std::string _ping(Request request, int sender_fd);
-    std::string _sendMessage(std::string num, std::string nickname, std::string msg);
-    std::string _printMessage(std::string num, std::string nickname, std::string msg);
-    std::string _parsing(std::string message, int sender_fd);    
+    // std::string _setUserName(Request request, int sender_fd);
+    //std::string _setNickName(Request request, int sender_fd);
+    //std::string _setFullName(Request request, int sender_fd);
+    //std::string _setPassword(Request request, int sender_fd);
+    //std::string _setOper(Request request, int sender_fd);
+    //std::string _setMode(Request &request, int sender_fd);
+    //std::string _joinChannel(Request request, int sender_fd);
+    //bool _validMode(Request request);
+    //std::string _quit(Request request, int sender_fd);
+    //std::string _part(Request request, int sender_fd);
+    //std::string _topic(Request request, int sender_fd);
+    //std::string _kick(Request request, int sender_fd);
+    //std::string _ping(Request request, int sender_fd);
+    //std::string _sendMessage(std::string num, std::string nickname, std::string msg);
+    //std::string _printMessage(std::string num, std::string nickname, std::string msg);
+    //std::string _parsing(std::string message, int sender_fd);    
     Request _splitRequest(std::string req);
     std::string _printHelpInfo();
     std::string _printUserModes(std::string ret, int sender_fd);
@@ -107,5 +107,8 @@ class Server
 
   public:
     void startServer(void);
+    Client *getClientByFd(int fd) const;
+    Channel *getChannelByName(std::string channelName) const;
+    Client *getClientByNickName(std::string nickName) const;
 };
 

@@ -1,7 +1,6 @@
-#include "../headers/Server.hpp"
+#include "./include/KickCommand.hpp"
 
-
-std::string Server::_kickedFromChannel(std::string ChannelName, std::string message, std::vector<std::string> users, int i)
+std::string KickCommand::_kickedFromChannel(std::string ChannelName, std::string message, std::vector<std::string> users, int i)
 {
     std::map<std::string, Channel *>::iterator it = this->_allChannels.find(ChannelName);
     if ( it != this->_allChannels.end())
@@ -36,7 +35,7 @@ std::string Server::_kickedFromChannel(std::string ChannelName, std::string mess
     return _printMessage("403", this->_clients[i]->getNickName(), ChannelName.append(" :No such channel"));
 };  
 
-std::string Server::_kick(Request request, int fd)
+std::string KickCommand::execute(Request request, int fd)
 {
   if(!this->_clients[fd]->getRegistered())
     return _printMessage("451", this->_clients[fd]->getNickName(), ":You have not registered");

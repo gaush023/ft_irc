@@ -2,8 +2,6 @@
 
 Server::Server() : _name(), _password(), _socketfd(0), _clients(), _pfds(NULL), _online_c(0), _prefix(":"), _allChannels(), _unavailableUserName(), _clientNicknames() {}
 
-
-
 Server::Server(std::string Name, int max_online, std::string Port, std::string Password): _clients()
 {
     this->_name = Name;
@@ -33,7 +31,7 @@ Server::~Server()
   {
     delete it->second;
     it++;
-  }  
+  }
   this->_clients.clear();
   std::map<std::string, Channel *>::iterator it2 = this->_allChannels.begin();
   while(it2 != this->_allChannels.end())
@@ -42,6 +40,11 @@ Server::~Server()
     it2++;
   }
   this->_allChannels.clear();
+  for (std::map<std::string, ICommand *>::iterator it = this->_commands.begin(); it != this->_commands.end(); ++it)
+  {
+    delete it->second;
+  }
+  _commands.clear();
 }
 
 std::string Server::_printMessage(std::string num, std::string nickname, std::string msg)
@@ -51,12 +54,34 @@ std::string Server::_printMessage(std::string num, std::string nickname, std::st
   return ":" + this->_name + " " + num + " " + nickname + " " + msg + "\r\n";
 }
 
+void Server::_registerCommands(void)
+{
+    this->_commands["PASS"]     = new SetCommand(*this);
+    this->_commands["NICK"]     = new SetCommand(*this);
+    this->_commands["USER"]     = new SetCommand(*this);
+    this->_commands["OPER"]     = new SetCommand(*this);
+    this->_commands["MODE"]     = new ModeCommand(*this);
+    this->_commands["PRIVMSG"]  = new PrivmsgCommand(*this);
+    this->_commands["NOTICE"]   = new NoticeCommand(*this);
+    this->_commands["HELP"]     = new HelpCommand(*this);
+    this->_commands["JOIN"]     = new JoinCommand(*this);
+    this->_commands["TOPIC"]    = new TopicCommand(*this);
+    this->_commands["KICK"]     = new KickCommand(*this);
+    this->_commands["PART"]     = new PartCommand(*this);
+    this->_commands["QUIT"]     = new QuitCommand(*this);
+    this->_commands["PING"]     = new PingCommand(*this);
+    this->_commands["INVITE"]   = new InviteCommand(*this);
+    this->_commands["SENDFILE"] = new SendFileCommand(*this);
+    this->_commands["GETFILE"]  = new GetFileCommand(*this);
+    this->_commands["HELPDESK"] = new HelpDeskCommand(*this);
+}
+
 void Server::_newClient(void)
 {
   struct sockaddr_storage remotaddr;
   socklen_t addrlen;
   int newfd;
-  
+
   addrlen = sizeof remotaddr;
   newfd = accept(this->_socketfd, (struct sockaddr *)&remotaddr, &addrlen);
   if (newfd < -1)
@@ -110,3 +135,31 @@ std::string Server::_getPassword() const
 {
   return this->_password;
 };
+
+Client *Server::getClientByFd(int fd) const
+{
+  std::map<int, Client *>::const_iterator it = this->_clients.find(fd);
+  if ( it == this->_clients.end())
+    return NULL;
+  return it->second;
+}
+
+
+Channel *Server::getChannelByName(const std::string &channelName) const
+{
+  std::map<std::string, Channel *>::const_iterator it = this->_allChannels.find(channelName);
+  if (it == this->_allChannels.end())
+    return NULL;
+  return it->second;
+}
+
+Client *Server::getClientByNickName(const std::string &nickname) const
+{
+  std::map<int, Client *>::const_iterator it;  
+  for (it = this->_clients.begin(); it != this->_clients.end(); ++it)
+  {
+    if (it->second->getNickName() == nickname)
+      return it->second;
+  }
+  return NULL;
+}

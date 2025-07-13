@@ -15,19 +15,23 @@ std::string Server::_welcomeMsg(void)
     return (welcome);
 }
 
-int			Server::_sendall(int destfd, std::string message)
+int Server::_sendall(int destfd, const std::string& message)
 {
-	int total = 0;
-	int bytesleft = message.length();
-	int b;
+    size_t total     = 0;
+    size_t to_send   = message.size();
+    const char* data = message.c_str();
 
-	while (total < (int)message.length())
-	{
-		b = send(destfd, message.c_str() + total, bytesleft, 0);
-		if (b == -1) break;
-		total += b;
-		bytesleft -= b;
-	}
-	return (b == -1 ? -1 : 0);
-};
-
+    while (total < to_send) {
+        ssize_t sent = send(destfd, data + total, to_send - total, 0);
+        if (sent < 0) {
+            if (errno == EINTR)  
+                continue;
+            return -1;            
+        }
+        if (sent == 0) {
+            return -1;
+        }
+        total += (size_t)sent;
+    }
+    return 0;
+}

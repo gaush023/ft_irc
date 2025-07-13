@@ -1,6 +1,6 @@
-#include "../headers/Server.hpp"
+#include "./include/JoinCommand.hpp"
 
-std::string Server::_joinChannel( Request request, int fd)
+std::string JoinCommand::execute(Request request, int fd)
 { 
   int status = 1;
   if (!this->_clients[fd]->getRegistered())
@@ -27,7 +27,7 @@ std::string Server::_joinChannel( Request request, int fd)
   return ("");
 }; 
 
-int Server::_createChannel( std::string ChannelName, int CreatorFd)
+int JoinCommand::_createChannel(std::string ChannelName, int CreatorFd)
 {
   std::map<std::string, Channel *>::iterator it = this->_allChannels.find(ChannelName);
   if ( it == this->_allChannels.end())
@@ -65,7 +65,7 @@ int Server::_createChannel( std::string ChannelName, int CreatorFd)
     return (USERJOINED);
 }
 
-int Server::_createPrvChannel(std::string ChannelName, std::string ChannelKey, int CreatorFd)
+int JoinCommand::_createPrvChannel(std::string ChannelName, std::string ChannelKey, int CreatorFd)
 {
   std::map<std::string, Channel *>::iterator it = this->_allChannels.find(ChannelName);
   if ( it == this->_allChannels.end())
@@ -104,7 +104,7 @@ int Server::_createPrvChannel(std::string ChannelName, std::string ChannelKey, i
     return (USERJOINED);
   };
 
-std::vector<std::string> Server::_commaSeparator(std::string arg)
+std::vector<std::string> JoinCommand::_commaSeparator(std::string arg)
 {
   std::vector<std::string> ret;
   size_t pos = 0;

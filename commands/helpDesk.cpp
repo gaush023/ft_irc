@@ -1,6 +1,6 @@
 #include "../headers/Server.hpp"
 
-std::string Server::_getBotMessage()
+std::string HelpDesk::_getBotMessage() const
 {
     std::string Greeting = BLUE;
     Greeting.append("\n\n\n\n\n\n\n██████████████████████████████████████████████████████████████████████████████████\n");
@@ -28,64 +28,105 @@ std::string Server::_getBotMessage()
     return (Greeting);
 }
 
-std::string Server::_serverInfo() const
-{
-  std::string server("Server Name: " + this->_name + "\n");
-  server.append("Online Users: " + toString(this->_online_c - 1) + "\n");
-  server.append("Max Online Users: " + toString(this->_max_online_c) + "\n");
-  server.append("Number of Channels: " + toString(this->_allChannels.size()) + "\n");
-  return (server);
-}
-
-std::string Server::_channelInfo(std::string channelName, int fd) 
-{
-  std::map<std::string, Channel *>::const_iterator it = this->_allChannels.find(channelName);
-  if ( it != this->_allChannels.end())
-  {
-    if (this->_clients[fd]->isjoined(channelName))
-    {
-      std::string Info;
-      Info.append("Channel Name: " + it->second->getName() + "\n");
-      Info.append("Channel Creator: " + it->second->getCreator()->getFullName() + "\n");
-      Info.append("Channel Topic: " + it->second->getTopic() + "\n");
-      Info.append("Online Users: " + toString(it->second->getOnlineUsers()) + "\n");
-      return (Info);
-    } 
-    else {
-      return ("You Need To Join This Channel First!\n");
+static size_t visibleLength(const std::string& s) {
+    size_t len = 0;
+    bool inEsc = false;
+    for (std::string::size_type i = 0; i < s.size(); ++i) {
+        char c = s[i];
+        if (!inEsc && c == '\x1b') {
+            inEsc = true;
+        }
+        else if (inEsc && c == 'm') {
+            inEsc = false;
+        }
+        else if (!inEsc) {
+            ++len;
+        }
     }
-  }
-  return ("There's No Channel Named " + channelName + " in the Server!\n");
+    return len;
 }
 
-std::string Server::_listAllChannels() const
-{
-  std::string channels(YELLOW "███████████████████████████████████████████████████████████████████████████████████████\n");
-  channels.append("█              █              █                    █                                  █\n");
-  channels.append("█" RESET " Channel Name " YELLOW "█ " RESET "Online Users " YELLOW "█ " RESET "Creator Of Channel " YELLOW "█ " RESET "          Channel Topic          " YELLOW "█\n");
-  channels.append("█              █              █                    █                                  █\n");
-  std::map<std::string, Channel *>::const_iterator it = this->_allChannels.begin();
-  while (it != this->_allChannels.end())
-  {
-    channels.append("█              █              █                    █                                  █\n");
-    channels.append("█ " RESET + it->first + YELLOW " █ " RESET + toString(it->second->getOnlineUsers()) + YELLOW " █ " RESET + it->second->getCreator()->getFullName() + YELLOW " █ " RESET + it->second->getTopic() + YELLOW " █\n");
-    channels.append("█              █              █                    █                                  █\n");
-    it++;
-  }
-  if (this->_allChannels.size() == 0)
-  {
-    channels.append("█                                                                                     █\n");
-    channels.append("█                                " RESET "NO CHANNELS IN SERVER" YELLOW "                                █\n");
-    channels.append("█                                                                                     █\n");
-     
-		channels.append("███████████████████████████████████████████████████████████████████████████████████████\n");
+static std::string frameLine(const std::string& content, size_t width) {
+    size_t vis = visibleLength(content);
+    size_t pad = (vis < width ? width - vis : 0);
+    std::string spaces;
+    for (size_t i = 0; i < pad; ++i) spaces += ' ';
+    return std::string("█ ") + content + spaces + " █\n";
+}
 
-  }
-  channels.append(RESET "\n\n");
-  return (channels);
-};
+std::string HelpDesk::_serverInfo() const
+    std::ostringstream oss;
+    const size_t WIDTH = 50;  
 
-std::string Server::_helpDesk(Request request, int fd)
+    oss << BLUE;
+    oss << frameLine(std::string("Server Name: ") + this->_name, WIDTH);
+    oss << frameLine(std::string("Online Users: ") + toString(this->_online_c - 1), WIDTH);
+    oss << frameLine(std::string("Max Online Users: ") + toString(this->_max_online_c), WIDTH);
+    oss << frameLine(std::string("Number of Channels: ") + toString(this->_allChannels.size()), WIDTH);
+    oss << RESET;
+    return oss.str();
+}
+
+std::string HelpDesk::_channelInfo(const std::string& channelName, int fd) const
+    std::ostringstream oss;
+    const size_t WIDTH = 70;
+    oss << BLUE;
+
+    std::map<std::string, Channel*>::const_iterator it =
+        this->_allChannels.find(channelName);
+    if (it != this->_allChannels.end()) {
+        if (this->_clients[fd]->isjoined(channelName)) {
+            oss << frameLine(std::string("Channel Name: ") +
+                             it->second->getName(), WIDTH);
+            oss << frameLine(std::string("Channel Creator: ") +
+                             it->second->getCreator()->getFullName(), WIDTH);
+            oss << frameLine(std::string("Channel Topic: ") +
+                             it->second->getTopic(), WIDTH);
+            oss << frameLine(std::string("Online Users: ") +
+                             toString(it->second->getOnlineUsers()), WIDTH);
+        }
+        else {
+            oss << frameLine("You Need To Join This Channel First!", WIDTH);
+        }
+    }
+    else {
+        oss << frameLine(std::string("There's No Channel Named ") +
+                         channelName + " in the Server!", WIDTH);
+    }
+    oss << RESET;
+    return oss.str();
+}
+
+
+std::string HelpDesk::_listAllChannels() const
+    std::ostringstream oss;
+    const size_t WIDTH = 86;
+    oss << BLUE;
+
+    oss << frameLine("Channel Name | Online | Creator | Topic", WIDTH);
+
+    if (this->_allChannels.empty()) {
+        oss << frameLine("NO CHANNELS IN SERVER", WIDTH);
+    }
+    else {
+        for (std::map<std::string, Channel*>::const_iterator it =
+                 this->_allChannels.begin();
+             it != this->_allChannels.end();
+             ++it)
+        {
+            std::string line = it->first
+                + " | " + toString(it->second->getOnlineUsers())
+                + " | " + it->second->getCreator()->getFullName()
+                + " | " + it->second->getTopic();
+            oss << frameLine(line, WIDTH);
+        }
+    }
+
+    oss << RESET;
+    return oss.str();
+}
+
+std::string HelpDesk::execute(Request request, int fd)
 {
   std::string Greeting(_getBotMessage());
   if (request.args.size() == 0)

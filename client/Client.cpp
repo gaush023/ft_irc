@@ -34,24 +34,6 @@ int	Client::getClientfd()		const { return (this->_clientfd); };
 int Client::getRegistered() const { return this->_Registered; };
 int Client::getisOperator() const { return this->_isOperator; };
 
-int Client::getMode(char mode) const
-{
-  if (mode == 'a')
-    return this->_modes.away;
-  else if (mode == 'i')
-    return this->_modes.invisible;
-  else if (mode == 'w')
-    return this->_modes.wallops;
-  else if (mode == 'r')
-    return this->_modes.restricted;
-  else if (mode == 'o')
-    return this->_modes.op;
-  else if (mode == 'O')
-    return this->_modes.localOp;
-  else if (mode == 's')
-    return this->_modes.server;
-  return 0;
-}
 
 void Client::setUserName(std::string UserName) { this->_UserName = UserName; };
 void Client::setNickName(std::string NickName) { this->_NickName = NickName; };
@@ -67,22 +49,6 @@ void Client::setIsOperator(int isOperator)
   this->_modes.op = isOperator;
   this->_modes.localOp = isOperator;
 };
-
-void Client::setMode(int value, char mode)
-{
-  if (mode == 'i')
-    this->_modes.invisible = value;
-  else if (mode == 'w')
-    this->_modes.wallops = value;
-  else if (mode == 'r' && value == 1)
-    this->_modes.restricted = value;
-  else if (mode == 'o' && value == 0)
-    this->_modes.op = value;
-  else if (mode == 'O' && value == 0)
-    this->_modes.localOp = value;
-  else if (mode == 's')
-    this->_modes.server = value;
-}
 
 int Client::isjoined(std::string ChannelName) const
 {
@@ -179,3 +145,11 @@ std::map<std::string, Channel *> Client::getJoinedChannels() const
 {
   return this->_joinedChannels;
 }
+
+bool Channel::hasUser(int fd)
+{
+  std::map<int, Client*>::const_itreator it = _members.find(fd);
+  return it != _members.end();
+}
+
+

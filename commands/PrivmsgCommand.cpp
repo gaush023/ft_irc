@@ -1,6 +1,6 @@
-#include "../headers/Server.hpp"
+#include "../include/PrivmsgCommand.hpp"
 
-std::string PrivmsgCommand::execute(Request request, int fd, Server &server)
+std::string PrivmsgCommand::execute(Request request)
 {
   if (!this->_clients[fd]->getRegistered())
     return (_printMessage("451", this->_clients[fd]->getNickName(), ":You have not registered"));
